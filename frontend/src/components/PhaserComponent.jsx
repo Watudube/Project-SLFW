@@ -34,6 +34,7 @@ export default function PhaserComponent() {
           default: "arcade",
           arcade: {
             gravity: { y: 200 },
+            debug: true, // TODO: Set to false in production!!!
           },
         },
       };
