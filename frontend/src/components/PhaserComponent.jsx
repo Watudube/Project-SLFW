@@ -3,7 +3,10 @@ import Phaser from "phaser";
 import { useEffect, useRef } from "react";
 
 // Importing Logic:
-import GameScene from "../phaser/gameScene.js";
+import OverworldScene from "../phaser/overworldScene.js";
+
+// Importing Constants:
+import { SCENE_KEYS } from "../phaser/scene-keys.js";
 
 // Importing Styles:
 import "./PhaserComponent.css";
@@ -11,7 +14,7 @@ import "./PhaserComponent.css";
 export default function PhaserComponent() {
   // Using refs to manage the Phaser game instance and container accross re-renders.
   const containerRef = useRef(null);
-  const gameRef = useRef(null);
+  const gameRef = useRef(Phaser.Game);
 
   useEffect(() => {
     /**
@@ -24,12 +27,12 @@ export default function PhaserComponent() {
       const height = containerRef.current.offsetHeight;
 
       // Configuring the Phaser game instance.
-      const config = {
+      const PhaserConfig = {
         type: Phaser.AUTO,
         parent: containerRef.current,
         width,
         height,
-        scene: GameScene, // Importing the scene from phaser/gameScene.js
+        scene: [OverworldScene], // Add more scenes via this list.
         physics: {
           default: "arcade",
           arcade: {
@@ -40,7 +43,7 @@ export default function PhaserComponent() {
       };
 
       // If a game instance already exists, destroy it before creating a new one.
-      gameRef.current = new Phaser.Game(config);
+      gameRef.current = new Phaser.Game(PhaserConfig);
     }
 
     // Create the Phaser game instance when the component mounts.

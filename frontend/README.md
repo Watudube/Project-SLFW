@@ -1,12 +1,59 @@
-# React + Vite
+# SLFW Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend client for the Simulated Living Fantasy World (SLFW) project. It combines React (for interface and UI logic) with Phaser 3 (for 2D canvas-based game rendering). This client connects to the SLFW backend for real-time gameplay and world updates.
 
-Currently, two official plugins are available:
+## REQUIREMENTS
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+To run this project locally, you’ll need the following installed:
 
-## Expanding the ESLint configuration
+1. Node.js:
+   Download from https://nodejs.org/. This also installs npm (Node Package Manager).
+   Recommended version: Node.js v18.x or later (LTS)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+To verify installation:
+
+```
+node -v
+npm -v
+```
+
+## GETTING STARTED (DEVELOPMENT)
+
+1. Install dependencies:
+
+```
+npm install
+```
+
+2. tart the development server:
+
+```
+npm run dev
+```
+
+This starts a local Vite server (usually at http://localhost:5173/). It supports hot reload while developing.
+
+## BUILDING FOR PRODUCTION
+
+To build the production-ready frontend:
+
+```
+npm run build
+```
+
+This outputs static files to the dist/ folder. You can serve this folder with a static server (like Nginx).
+
+To preview the production build locally:
+
+```
+npm run preview
+```
+
+## CONTRIBUTORS
+
+- Hai Peng Kevin Goh – Frontend Development Lead, UI/UX Design, Systems Design
+- Marshall Bullis – Backend Development Lead, Deployment Architectur
+
+## LICENSE
+
+This project is under development for learning, experimentation, and portfolio use. Licensing will be determined at a later stage.
