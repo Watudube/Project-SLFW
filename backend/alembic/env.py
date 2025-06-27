@@ -5,8 +5,8 @@ from alembic import context
 from app.db.base import Base
 from app.db.session import engine
 
-# Not used directly but required to register model classes with metadata
-import app.models
+# Not used directly but required to register metadata of model classes
+from app.models import *
 
 import os
 import sys
