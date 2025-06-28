@@ -1,0 +1,27 @@
+@startuml
+
+' Base class for all entities:
+
+
+
+abstract class Entity {
+  -id: UUID
+  -name: String
+  -label: String
+  -description: String
+  -position: Vector2
+  +get_id(): UUID
+  +set_name(name: String): void
+  +get_name(): String
+  +set_label(label: String): void
+  +get_label(): String
+  +set_description(description: String): void
+  +get_description(): String
+  +set_position(position: Vector2): void
+  +get_position(): Vector2
+}
+
+Tile "1" *-- "many" Entity : contains >
+Entity --> Vector2 : has >
+
+@enduml

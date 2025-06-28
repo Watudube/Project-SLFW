@@ -1,0 +1,9 @@
+@startuml
+
+abstract class Prop {
+  has_collision: bool
+}
+
+Entity <|-- Prop
+
+@enduml

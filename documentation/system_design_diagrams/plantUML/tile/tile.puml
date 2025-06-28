@@ -1,0 +1,42 @@
+@startuml
+
+' Tile hierarchy
+
+abstract class Tile {
+  -id: UUID
+  -name: String
+  -label: String
+  -description: String
+  -position: Vector2
+  -sprite: String
+  -entities: List<Entity>
+  +get_id(): UUID
+  +set_name(name: String): void
+  +get_name(): String
+  +set_label(label: String): void
+  +get_label(): String
+  +set_description(description: String): void
+  +get_description(): String
+  +set_position(position: Vector2): void
+  +get_position(): Vector2
+  +set_sprite(sprite: String): void
+  +get_sprite(): String
+  +add_entity(entity: Entity): void
+  +remove_entity(entity: Entity): void
+  +get_entities(): List<Entity>
+}
+
+class Wall
+
+Tile <|-- Wall
+
+class Floor {
+  -speed_modifier: Float
+  +set_speed_modifier(speed: Float): void
+  +get_speed_modifier(): Float
+}
+
+Tile <|-- Floor
+Tile --> Vector2 : has >
+
+@enduml

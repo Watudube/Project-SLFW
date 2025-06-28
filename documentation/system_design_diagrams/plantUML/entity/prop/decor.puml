@@ -1,0 +1,8 @@
+@startuml
+
+abstract class Decor {
+}
+
+Prop <|-- Decor
+
+@enduml

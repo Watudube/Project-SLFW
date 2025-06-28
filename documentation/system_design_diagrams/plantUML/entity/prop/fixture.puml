@@ -1,0 +1,8 @@
+@startuml
+
+abstract class Fixture {
+}
+
+Prop <|-- Fixture
+
+@enduml

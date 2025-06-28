@@ -1,0 +1,30 @@
+@startuml
+
+' Include relative fule paths here to all puml, to help render a full diagram.
+
+!include types/vector2.puml
+
+!include entity/entity.puml
+
+!include entity/actor/actor.puml
+!include entity/actor/human/human.puml
+!include entity/actor/animal/animal.puml
+!include entity/actor/animal/passive_animal.puml
+!include entity/actor/animal/aggressive_animal.puml
+
+!include entity/item/item.puml
+!include entity/item/deployable.puml
+
+!include entity/prop/prop.puml
+!include entity/prop/fields/field.puml
+!include entity/prop/fields/flora.puml
+!include entity/prop/fields/enviroment_effect.puml
+
+!include entity/prop/decor.puml
+
+!include entity/prop/fixture.puml
+
+
+!include tile/tile.puml
+
+@enduml

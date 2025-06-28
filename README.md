@@ -4,7 +4,6 @@ At its largest scale, the Simulated Living Fantasy World (SLFW) game will simula
 
 ## TODO for developers:
 
-- Once the python side of the project is in a testable state, check the Dockerfile and run.sh is compatible.
 - Once the the python and react side of the project is both in a testable state, check nginx.conf is compatible.
 
 ## Building the test enviroment using Docker:
