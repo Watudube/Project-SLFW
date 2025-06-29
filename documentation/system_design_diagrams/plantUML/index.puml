@@ -16,9 +16,9 @@
 !include entity/item/deployable.puml
 
 !include entity/prop/prop.puml
-!include entity/prop/fields/field.puml
-!include entity/prop/fields/flora.puml
-!include entity/prop/fields/enviroment_effect.puml
+!include entity/prop/field/field.puml
+!include entity/prop/field/flora.puml
+!include entity/prop/field/enviroment_effect.puml
 
 !include entity/prop/decor.puml
 
