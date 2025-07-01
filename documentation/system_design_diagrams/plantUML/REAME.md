@@ -28,6 +28,10 @@ There is a file called "plantuml-mit-1.2025.3.jar", its a java file that renders
 
 See the folder structure below for where to find it.
 
+### 4. VS Code Extension
+
+Install the PLantUML extension by jebbs for quick previews using the online API and VSCode's internal browser.
+
 ---
 
 ## Folder Structure (folders under "plantUML/." are EXAMPLES ONLY):
@@ -57,6 +61,12 @@ To render all `.puml` files in this folder and subfolders:
     java -jar plantuml-mit-1.2025.3.jar -r .
 
 This generates `.png` files next to each `.puml`.
+
+## How to PREVIEW Diagrams Using the Online API and VS Code (Most Convient Way of Seeing Diagrams)
+
+Assuming you have the PlantUML vs code extension installed:
+
+    When on the .puml file you want to preview, press ALT + D.
 
 ---
 
