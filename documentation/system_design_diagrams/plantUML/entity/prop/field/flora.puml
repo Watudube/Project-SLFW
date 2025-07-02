@@ -1,0 +1,12 @@
+@startuml
+
+abstract class Flora {
+}
+
+class Grass
+
+Field <|-- Flora
+
+Flora <|-- Grass
+
+@enduml

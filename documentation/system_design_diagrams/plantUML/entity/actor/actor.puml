@@ -1,0 +1,19 @@
+@startuml
+
+abstract class Actor {
+  -health: int
+  -speed: float
+  -percieved_entities: list[Entity]
+  -target_position: tuple[float, float]
+  -target_interaction: tuple[Entity, str]
+  -interactions_on_self: List[tuple[Entity, str]]
+  -priorities_list: list[Priorities]
+  +get_percieved_entities() -> list[Entity]
+  +update_percieved_entities() -> None
+}
+
+' TODO: Add more methods and attributes as needed.
+
+Entity <|-- Actor
+
+@enduml

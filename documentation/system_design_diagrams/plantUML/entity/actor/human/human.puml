@@ -1,0 +1,11 @@
+@startuml
+
+abstract class Human
+
+Actor <|-- Human
+Human -- Apple : consumes >
+
+class Villager
+Human <|-- Villager
+
+@enduml

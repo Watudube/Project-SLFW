@@ -1,0 +1,13 @@
+/*
+Global styles for the application.
+Note: main.css also contains global styles (intended to reset some default styles) please check that file if you notice conflicts.
+*/
+
+body {
+  background-color: #1f1f1f;
+  color: #ffffff;
+}
+
+.app-container {
+  min-height: 100vh;
+}

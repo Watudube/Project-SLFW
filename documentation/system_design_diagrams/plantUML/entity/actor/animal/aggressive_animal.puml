@@ -1,0 +1,13 @@
+@startuml
+
+abstract class Aggresive_Animal
+
+Animal <|-- Aggresive_Animal
+Aggresive_Animal -- Human : "attacks" >
+Aggresive_Animal -- Passive_Animal : "attacks" >
+
+class Wolf
+
+Aggresive_Animal <|-- Wolf
+
+@enduml

@@ -1,0 +1,30 @@
+@startuml
+
+abstract class Tile {
+  - id: uuid.UUID
+  - name: str
+  - label: str
+  - description: str
+  - position: tuple[int, int]
+  - category: str
+  - sprite: str
+  - is_wall: bool
+  - speed_modifier: float
+  - entities: list[Entity]
+  + get_id() -> uuid.UUID
+  + set_name(str) -> None
+  + get_name() -> str
+  + set_label(str) -> None
+  + get_label() -> str
+  + set_description(str) -> None
+  + get_description() -> str
+  + set_position(tuple[int, int]) -> None
+  + get_position() -> tuple[int, int]
+  + set_sprite(str) -> None
+  + get_sprite() -> str
+  + add_entity(Entity) -> None
+  + remove_entity(uuid.UUID) -> None
+  + get_entities() -> list[Entity]
+}
+
+@enduml

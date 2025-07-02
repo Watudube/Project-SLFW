@@ -1,0 +1,12 @@
+@startuml
+
+abstract class Enviroment_Effect {
+}
+
+class Fire
+
+Field <|-- Enviroment_Effect
+
+Enviroment_Effect <|-- Fire
+
+@enduml

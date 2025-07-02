@@ -1,0 +1,11 @@
+@startuml
+
+abstract class Item {
+}
+
+Entity <|-- Item
+
+class Apple
+Item <|-- Apple
+
+@enduml

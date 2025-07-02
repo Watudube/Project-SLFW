@@ -1,0 +1,10 @@
+@startuml
+
+abstract class Deployable {
+  -is_deployed: bool
+  +deploy(tuple[int, int]) -> None
+}
+
+Item <|-- Deployable
+
+@enduml

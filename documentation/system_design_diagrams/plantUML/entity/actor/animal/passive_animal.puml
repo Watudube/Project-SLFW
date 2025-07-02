@@ -1,0 +1,12 @@
+@startuml
+
+abstract class Passive_Animal
+
+Animal <|-- Passive_Animal
+Passive_Animal <|-- Deer
+
+class Deer
+Deer -- Grass : eats >
+
+
+@enduml
