@@ -90,16 +90,16 @@ export default function PhaserComponent({ websocketService, userToken }) {
 
       // Configuring the Phaser game instance.
       const PhaserConfig = {
-        type: Phaser.AUTO,
-        parent: containerRef.current,
+        type: Phaser.AUTO, // Automatically choose WebGL or Canvas rendering.
+        parent: containerRef.current, // Attach the game to the div container returned by this component.
         width,
         height,
         scene: [OverworldScene], // Add more scenes via this list.
         physics: {
-          default: "arcade",
+          default: "arcade", // Using Arcade Physics system. TODO: Change if needed.
           arcade: {
-            gravity: { y: 200 },
-            debug: true, // TODO: Set to false in production!!!
+            gravity: { y: 200 }, // TODO: Change physics system if needed.
+            debug: true, // TODO: Set to false in production!!! Shows collision boxes and other debug info.
           },
         },
       };
