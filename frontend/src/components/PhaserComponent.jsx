@@ -6,15 +6,77 @@ import { useEffect, useRef } from "react";
 import OverworldScene from "../phaser/overworldScene.js";
 
 // Importing Constants:
-import { SCENE_KEYS } from "../phaser/scene-keys.js";
+import { SCENE_KEYS } from "../phaser/sceneKeys.js";
 
 // Importing Styles:
 import "./PhaserComponent.css";
 
-export default function PhaserComponent() {
+export default function PhaserComponent({ websocketService, userToken }) {
   // Using refs to manage the Phaser game instance and container accross re-renders.
   const containerRef = useRef(null);
-  const gameRef = useRef(Phaser.Game);
+  const gameRef = useRef(null);
+
+  // Set up WebSocket event listeners for game updates:
+  useEffect(() => {
+    if (!websocketService || !userToken) return; // If no websocket service or user token, do not set up listeners.
+
+    /**
+     * Passes world update data to the Phaser scene to handle.
+     * This function is called when the WebSocket service receives a "worldUpdate" event.
+     * @param {*} data - The data received from the server containing world updates.
+     */
+    const worldUpdateListener = (data) => {
+      console.log("World update received:", data);
+      if (gameRef.current) {
+        const scene = gameRef.current.scene.getScene(SCENE_KEYS.OVERWORLD_SCENE);
+        if (scene && scene.handleWorldUpdate) {
+          scene.handleWorldUpdate(data);
+        }
+      }
+    };
+
+    /**
+     * Passes entity update data to the Phaser scene to handle.
+     * This function is called when the WebSocket service receives an "entityUpdate" event.
+     * @param {*} data - The data received from the server containing entity updates.
+     */
+    const entityUpdateListener = (data) => {
+      console.log("Entity update received:", data);
+      if (gameRef.current) {
+        const scene = gameRef.current.scene.getScene(SCENE_KEYS.OVERWORLD_SCENE);
+        if (scene && scene.handleEntityUpdate) {
+          scene.handleEntityUpdate(data);
+        }
+      }
+    };
+
+    /**
+     * Passes player update data to the Phaser scene to handle.
+     * This function is called when the WebSocket service receives a "playerUpdate" event.
+     * @param {*} data - The data received from the server containing player updates.
+     */
+    const playerUpdateListener = (data) => {
+      console.log("Player update received:", data);
+      if (gameRef.current) {
+        const scene = gameRef.current.scene.getScene(SCENE_KEYS.OVERWORLD_SCENE);
+        if (scene && scene.handlePlayerUpdate) {
+          scene.handlePlayerUpdate(data);
+        }
+      }
+    };
+
+    // Register event listeners for WebSocket events.
+    websocketService.on("worldUpdate", worldUpdateListener);
+    websocketService.on("entityUpdate", entityUpdateListener);
+    websocketService.on("playerUpdate", playerUpdateListener);
+
+    // Cleanup listeners when component unmounts or dependencies change
+    return () => {
+      websocketService.off("worldUpdate", worldUpdateListener);
+      websocketService.off("entityUpdate", entityUpdateListener);
+      websocketService.off("playerUpdate", playerUpdateListener);
+    };
+  }, [websocketService, userToken]);
 
   useEffect(() => {
     /**
@@ -42,12 +104,22 @@ export default function PhaserComponent() {
         },
       };
 
-      // If a game instance already exists, destroy it before creating a new one.
+      // Create the Phaser game instance.
       gameRef.current = new Phaser.Game(PhaserConfig);
+
+      // Pass websocket service to the scene after creation.
+      if (websocketService && gameRef.current) {
+        const scene = gameRef.current.scene.getScene(SCENE_KEYS.OVERWORLD_SCENE);
+        if (scene) {
+          scene.setWebSocketService(websocketService);
+        }
+      }
     }
 
     // Create the Phaser game instance when the component mounts.
-    createGame();
+    if (containerRef.current) {
+      createGame();
+    }
 
     /**
      * Handles window resize events to adjust the Phaser game scale.
@@ -67,9 +139,10 @@ export default function PhaserComponent() {
       window.removeEventListener("resize", handleResize);
       if (gameRef.current) {
         gameRef.current.destroy(true);
+        gameRef.current = null;
       }
     };
-  }, []);
+  }, [websocketService]);
 
   return (
     <div ref={containerRef} className="phaser-component-container" style={{ width: "100%", height: "100%" }}></div>
