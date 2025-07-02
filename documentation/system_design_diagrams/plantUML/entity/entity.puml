@@ -1,27 +1,22 @@
 @startuml
 
-' Base class for all entities:
-
-
-
 abstract class Entity {
-  -id: UUID
-  -name: String
-  -label: String
-  -description: String
-  -position: Vector2
-  +get_id(): UUID
-  +set_name(name: String): void
-  +get_name(): String
-  +set_label(label: String): void
-  +get_label(): String
-  +set_description(description: String): void
-  +get_description(): String
-  +set_position(position: Vector2): void
-  +get_position(): Vector2
+  - id: uuid.UUID
+  - name: str
+  - label: str
+  - description: str
+  - position: tuple[int, int]
+  + get_id() -> uuid.UUID
+  + set_name(str) -> None
+  + get_name() -> str
+  + set_label(label: str) -> None
+  + get_label() -> str
+  + set_description(str) -> None
+  + get_description() -> str
+  + set_position(position: tuple[int, int]) -> None
+  + get_position() -> tuple[int, int]
 }
 
 Tile "1" *-- "many" Entity : contains >
-Entity --> Vector2 : has >
 
 @enduml

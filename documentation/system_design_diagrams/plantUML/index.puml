@@ -2,7 +2,7 @@
 
 ' Include relative fule paths here to all puml, to help render a full diagram.
 
-!include types/vector2.puml
+!include types/customData.puml
 
 !include entity/entity.puml
 

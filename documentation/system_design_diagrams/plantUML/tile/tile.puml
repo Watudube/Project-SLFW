@@ -1,42 +1,30 @@
 @startuml
 
-' Tile hierarchy
-
 abstract class Tile {
-  -id: UUID
-  -name: String
-  -label: String
-  -description: String
-  -position: Vector2
-  -sprite: String
-  -entities: List<Entity>
-  +get_id(): UUID
-  +set_name(name: String): void
-  +get_name(): String
-  +set_label(label: String): void
-  +get_label(): String
-  +set_description(description: String): void
-  +get_description(): String
-  +set_position(position: Vector2): void
-  +get_position(): Vector2
-  +set_sprite(sprite: String): void
-  +get_sprite(): String
-  +add_entity(entity: Entity): void
-  +remove_entity(entity: Entity): void
-  +get_entities(): List<Entity>
+  - id: uuid.UUID
+  - name: str
+  - label: str
+  - description: str
+  - position: tuple[int, int]
+  - category: str
+  - sprite: str
+  - is_wall: bool
+  - speed_modifier: float
+  - entities: list[Entity]
+  + get_id() -> uuid.UUID
+  + set_name(str) -> None
+  + get_name() -> str
+  + set_label(str) -> None
+  + get_label() -> str
+  + set_description(str) -> None
+  + get_description() -> str
+  + set_position(tuple[int, int]) -> None
+  + get_position() -> tuple[int, int]
+  + set_sprite(str) -> None
+  + get_sprite() -> str
+  + add_entity(Entity) -> None
+  + remove_entity(uuid.UUID) -> None
+  + get_entities() -> list[Entity]
 }
-
-class Wall
-
-Tile <|-- Wall
-
-class Floor {
-  -speed_modifier: Float
-  +set_speed_modifier(speed: Float): void
-  +get_speed_modifier(): Float
-}
-
-Tile <|-- Floor
-Tile --> Vector2 : has >
 
 @enduml

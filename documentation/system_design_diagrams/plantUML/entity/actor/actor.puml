@@ -3,18 +3,16 @@
 abstract class Actor {
   -health: int
   -speed: float
-  -task_list: List[Task]
-  +get_health(): int
-  +set_health(health: int): void
-  +get_speed(): float
-  +set_speed(speed: float): void
-  +move(direction: Direction): void
-  +add_task(task: Task): void
-  +remove_task(task: Task): void
-  +get_tasks(): List[Task]
-  +sort_tasks(): void
-  +perform_task(task: Task): void
+  -percieved_entities: list[Entity]
+  -target_position: tuple[float, float]
+  -target_interaction: tuple[Entity, str]
+  -interactions_on_self: List[tuple[Entity, str]]
+  -priorities_list: list[Priorities]
+  +get_percieved_entities() -> list[Entity]
+  +update_percieved_entities() -> None
 }
+
+' TODO: Add more methods and attributes as needed.
 
 Entity <|-- Actor
 
