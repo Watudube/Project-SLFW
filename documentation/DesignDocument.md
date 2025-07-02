@@ -27,8 +27,10 @@ title: "Design Document – Project: SLFW"
     - [Hybrid MVC Software Architectural Pattern](#hybrid-mvc-software-architectural-pattern)
   - [(CSUIF_V0.1) Proof of Concept Client-Side Application](#csuif_v0.1-proof-of-concept-client-side-application)
     - [Mock-Ups](#mock-ups)
+    - [Tile Set](#tile-set)
     - [Systems Design](#systems-design)
   - [(SSF_V0.1) Proof of Concept Server-Side Application](#ssf_v0.1-proof-of-concept-server-side-application)
+    - [Systems Design](#systems-design-1)
 - [References](#references)
 
 \[Placeholder for Cover Image\]
@@ -83,11 +85,15 @@ This is a <u>living document</u> for the development of an indie game project th
 
 [Mock-Ups [11](#mock-ups)](#mock-ups)
 
-[Systems Design [12](#systems-design)](#systems-design)
+[Tile Set [13](#tile-set)](#tile-set)
 
-[(SSF_V0.1) Proof of Concept Server-Side Application [13](#ssf_v0.1-proof-of-concept-server-side-application)](#ssf_v0.1-proof-of-concept-server-side-application)
+[Systems Design [16](#systems-design)](#systems-design)
 
-[References [14](#_Toc201773172)](#_Toc201773172)
+[(SSF_V0.1) Proof of Concept Server-Side Application [17](#ssf_v0.1-proof-of-concept-server-side-application)](#ssf_v0.1-proof-of-concept-server-side-application)
+
+[Systems Design [17](#systems-design-1)](#systems-design-1)
+
+[References [18](#_Toc202384493)](#_Toc202384493)
 
 # Conceptualisation
 
@@ -290,65 +296,79 @@ Alembic is a schema migration tool that tracks and applies changes to the Postgr
 
 **<u>Project-SLFW</u>**/
 
-├── backend/
+├── .vscode/ \# VSCode workspace configuration files
 
-│ ├── app/
+├── backend/ \# Server-side Python application
 
-│ │ ├── api/ \# Route controllers (HTTP + WebSocket)
+│ ├── alembic/ \# Database migration management
 
-│ │ ├── core/ \# Configs, settings, app startup logic
+│ │ └── versions/ \# Database migration scripts
 
-│ │ ├── db/ \# Database session, Alembic setup
+│ └── app/ \# Main backend application code
 
-│ │ ├── models/ \# SQLAlchemy ORM models
+│ ├── api/ \# API route controllers (HTTP + WebSocket endpoints)
 
-│ │ ├── schemas/ \# Pydantic models (request/response)
+│ ├── core/ \# Core configurations, settings, app startup logic
 
-│ │ ├── services/ \# Game logic, session manager, economy, etc.
+│ ├── db/ \# Database session management and settings
 
-│ │ ├── repositories/ \# DB access logic (CRUD, joins, queries)
+│ ├── models/ \# SQLAlchemy ORM models (database schema definitions)
 
-│ │ └── main.py \# FastAPI app entrypoint
+│ ├── repositories/ \# Database access layer (CRUD operations)
 
-│ ├── alembic/ \# Alembic migrations
+│ ├── schemas/ \# Pydantic models for request/response validation
 
-│ │ ├── versions/ \# Auto-generated migration files
+│ └── services/ \# Business logic and game systems
 
-│ │ └── env.py \# Migration context logic
+├── documentation/ \# Project documentation and design materials
 
-│ ├── alembic.ini \# Alembic config
+│ ├── design_document_media/ \# Images and media for design document
 
-│ ├── requirements.txt \# Python deps
+│ ├── project_management_media/ \# Images and media for project management docs
 
-│ └── seed.py \# Optional: insert default DB data
+│ └── system_design_diagrams/ \# System architecture and UML diagrams
 
-├── frontend/
+│ └── plantUML/ \# PlantUML source files for diagrams
 
-│ ├── public/ \# Static files and Phaser assets
+│ ├── entity/ \# Entity class diagrams
 
-│ ├── src/
+│ │ ├── actor/ \# Actor entities (humans, animals)
 
-│ │ ├── components/ \# React UI components
+│ │ │ ├── animal/ \# Animal-specific entities
 
-│ │ ├── phaser/ \# Game scenes, physics, game logic
+│ │ │ └── human/ \# Human-specific entities
 
-│ │ ├── hooks/ \# Custom React hooks for state/service integration
+│ │ ├── item/ \# Item entities
 
-│ │ ├── services/ \# Game, player, map, asset, API, websocket services
+│ │ └── prop/ \# Prop entities (decorations, fixtures, fields)
+
+│ │ └── field/ \# Field-specific props (flora, environment effects)
+
+│ ├── service/ \# Service layer diagrams
+
+│ ├── tile/ \# Tile system diagrams
+
+│ └── types/ \# Custom data type definitions
+
+├── frontend/ \# Client-side React + Phaser application
+
+│ ├── src/ \# Source code
 
 │ │ ├── assets/ \# Game assets (images, audio, maps)
 
-│ │ └── App.jsx \# App root
+│ │ ├── components/ \# Reusable React UI components
 
-│ ├── index.html
+│ │ ├── contexts/ \# React context providers for global state
 
-│ ├── vite.config.ts
+│ │ ├── pages/ \# Main page components
 
-│ └── package.json
+│ │ ├── phaser/ \# Phaser game scenes and logic
 
-├── nginx/
+│ │ └── services/ \# Frontend services (API, WebSocket communication)
 
-│ └── nginx.conf \# Nginx config (serves React + proxies API)
+│ └── public/ \# Static files served directly
+
+└── nginx/ \# Nginx configuration for reverse proxy
 
 ├── README.md
 
@@ -360,7 +380,7 @@ Alembic is a schema migration tool that tracks and applies changes to the Postgr
 
 The tech-stack described above allows for the project to implement a hybrid of the MVC software architecture pattern and real-time client-server sync: backend Models are mutated via controller logic (FastAPI), and changes are streamed to the frontend where lightweight client-side models are reconstructed and rendered. This allows authoritative world logic on the server while providing responsive client-side views.
 
-In this hybrid architecture, it is imperative that all model state changes occur only at the backend which maintains the “one source of truth”, such that users are not able to maliciously compromise the integrity of the models’ state. Data sent to the frontend should only be what is required for the user’s client to render what the users are allowed to perceive, and only what information the users are allowed to know. Information sent back from the frontend should only be action requests that are validated when received by the backend.
+In this hybrid architecture, it is imperative that all model state changes occur only at the backend which maintains the “Authoritative Source of Truth”, such that users are not able to maliciously compromise the integrity of the models’ state. Data sent to the frontend should only be what is required for the user’s client to render what the users are allowed to perceive, and only what information the users are allowed to know. Information sent back from the frontend should only be action requests that are validated when received by the backend.
 
 For example, an enemy is rendered by the frontend application using positional data from the backend, and only information regarding the enemy’s health is provided to the player – all other information is filtered out by the backend. The player can then choose to attack the enemy, which sends an action request to the backend, and is then validated. If perhaps the enemy is too far from the player, the validation fails, and the player is informed via a return message. If the enemy is indeed in range, the attack succeeds, and a state change occurs in the backend and the original model is updated. Subsequently, the updated model’s state is filtered again (to what is allowed for the frontend) and the updated data sent back to the frontend allows the re-rendering of the enemy with less health.
 
@@ -385,7 +405,7 @@ For example, an enemy is rendered by the frontend application using positional d
 
 ### Mock-Ups
 
-#### Product Website – HTML Mockup
+#### Product Website – HTML Mock-Up
 
 For this iteration of the product, all that is really needed for the product website is DOM and single page to hold the Phaser GUI component. There is some space provided for a product title and text-based instructions (updated to the current iteration’s available features). There is also no need for any user profile specific affordances (like logging in) as all users in this iteration will spawn an invisible camera entity to assist with moving the viewport around.
 
@@ -394,9 +414,53 @@ For this iteration of the product, all that is really needed for the product web
 <figcaption><p>: The initial website of the project will just be a Home page that hosts the Phaser component that renders the GUI of the game.</p></figcaption>
 </figure>
 
-#### Game GUI – Sketch
+#### Game GUI – Excel Mock-Up
 
 The Game GUI’s is just a component that sits, embedded, in the base website and renders the game world.
+
+<figure>
+<img src="design_document_media/media/image6.png" style="width:6.48318in;height:4.69172in" alt="A grid of numbers and letters AI-generated content may be incorrect." />
+<figcaption><p>: The game rendering will be grid based, the above is just a mock-up of a potential game scene.</p></figcaption>
+</figure>
+
+### Tile Set
+
+Several 2D tile set, from <https://kenney.nl/> will be used for project SLFW’s Version 0.1. In time, custom artwork will be integrated into the game. The following are the tile sets used from the bulk pack of assets purchased (Kenney.nl, 2025):
+
+<figure>
+<img src="design_document_media/media/image7.png" style="width:7.26389in;height:4.07569in" />
+<figcaption><p>: Tiny Battle Tile Set from Kenny.nl.</p></figcaption>
+</figure>
+
+<figure>
+<img src="design_document_media/media/image8.png" style="width:7.26389in;height:4.07569in" />
+<figcaption><p>: Tiny Dungeon Tile Set from Kenny.nl.</p></figcaption>
+</figure>
+
+<figure>
+<img src="design_document_media/media/image9.png" style="width:7.26389in;height:4.07569in" />
+<figcaption><p>: Tiny Town Tile Set from Kenny.nl.</p></figcaption>
+</figure>
+
+<figure>
+<img src="design_document_media/media/image10.png" style="width:7.26389in;height:4.07569in" />
+<figcaption><p>: Roguelike Base Pack Tile Set from Kenny.nl.</p></figcaption>
+</figure>
+
+<figure>
+<img src="design_document_media/media/image11.png" style="width:7.26389in;height:4.07569in" />
+<figcaption><p>: Roguelike Character Pack Tile Set from Kenny.nl.</p></figcaption>
+</figure>
+
+<figure>
+<img src="design_document_media/media/image12.png" style="width:7.26389in;height:4.07569in" />
+<figcaption><p>: Roguelike Dungeon Pack Tile Set from Kenny.nl.</p></figcaption>
+</figure>
+
+<figure>
+<img src="design_document_media/media/image13.png" style="width:7.26389in;height:4.07569in" />
+<figcaption><p>: Roguelike Interior Pack Tile Set from Kenny.nl.</p></figcaption>
+</figure>
 
 ### Systems Design
 
@@ -426,16 +490,6 @@ The following standard design considerations are taken into account when designi
 
 <u>Purpose</u>: Encapsulate logic not tied to UI or rendering. Promotes modularity and reusability.
 
-<u>Examples</u>:
-
-- playerService.js — Player stats, inventory, progression.
-
-- gameStateService.js — Save/load/reset game state.
-
-- mapService.js — Map loading and parsing.
-
-- assetService.js — Asset preloading and management.
-
 - apiService.js — HTTP requests to backend (leaderboards, saves).
 
 - websocketService.js — Real-time multiplayer or chat via WebSockets.
@@ -453,6 +507,10 @@ The following standard design considerations are taken into account when designi
 ## (SSF_V0.1) Proof of Concept Server-Side Application
 
 <u>For this first iteration of the project</u>
+
+### Systems Design
+
+#### Class Diagrams
 
 # References
 
