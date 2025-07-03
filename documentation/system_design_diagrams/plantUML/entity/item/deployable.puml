@@ -2,8 +2,7 @@
 
 abstract class Deployable {
   -is_deployed: bool
-  +deploy(Vector2): void
-  +undeploy(Actor.id: UUID): void
+  +deploy(tuple[int, int]) -> None
 }
 
 Item <|-- Deployable
