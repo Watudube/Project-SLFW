@@ -3,4 +3,4 @@ const domainURL = window.location.host;
 
 // Endpoint templates:
 export const WEBSOCKET_BASEURL = `ws://${domainURL}/ws/game`;
-export const GAME_API_BASEURL = `http://${domainURL}/api`;
+export const GAME_API_BASEURL = `http://${domainURL}`;
