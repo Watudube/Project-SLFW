@@ -1,1 +1,1 @@
-from .humans import Human
+from .core.entity import Entity
