@@ -1,5 +1,5 @@
 // Importing Dependencies:
-import React, { createContext, useState, useEffect } from "react";
+import React, { createContext, useState, useEffect, useCallback } from "react";
 import { apiService } from "../services/apiService";
 
 /**
@@ -12,6 +12,8 @@ import { apiService } from "../services/apiService";
 const UserContext = createContext();
 
 function UserProvider({ children }) {
+  console.log("UserProvider mounting...");
+
   const [userToken, setUserToken] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -20,7 +22,7 @@ function UserProvider({ children }) {
    * This simulates getting a user token without actual authentication.
    * TODO: Replace with real authentication flow later.
    */
-  const guestLogin = async () => {
+  const guestLogin = useCallback(async () => {
     try {
       setIsLoading(true);
       console.log("Attempting guest-login...");
@@ -38,7 +40,7 @@ function UserProvider({ children }) {
     } finally {
       setIsLoading(false); // This MUST or else some components will not render.
     }
-  };
+  }, []); // Empty dependency array since this function doesn't depend on any props or state
 
   //
   // Login Function Goes Here When Implemented.
@@ -47,26 +49,26 @@ function UserProvider({ children }) {
   /**
    * Logout function to clear user data and token.
    */
-  const logout = () => {
+  const logout = useCallback(() => {
     console.log(`Logging out user with token: ${userToken}...`);
-    setUserData(null);
     setUserToken(null);
-    sessionStorage.removeItem("userToken.");
+    sessionStorage.removeItem("userToken");
     console.log("User logged out.");
-  };
+  }, [userToken]);
 
   /**
-   * Check for existing token on app start.
+   * Check for existing token on app start and auto-login if none exists.
    */
   useEffect(() => {
     const savedToken = sessionStorage.getItem("userToken");
     if (savedToken) {
-      // Validate token with backend (optional)
       setUserToken(savedToken);
-      // TODO:  When backend login systen is fully implemented, validate token with backend.
-      //        If valid, set user data, send user to log in.
+      setIsLoading(false);
+    } else {
+      // No saved token, automatically attempt guest login
+      guestLogin();
     }
-  }, []);
+  }, [guestLogin]);
 
   return (
     <UserContext.Provider

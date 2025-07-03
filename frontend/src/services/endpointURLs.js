@@ -3,4 +3,4 @@ const domainURL = "localhost:8000";
 
 // Endpoint templates:
 export const WEBSOCKET_BASEURL = `ws://${domainURL}/ws`;
-export const GAME_API_BASEURL = `http://${domainURL}/api`;
+export const GAME_API_BASEURL = `http://${domainURL}`;

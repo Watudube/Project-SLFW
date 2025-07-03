@@ -19,19 +19,21 @@ npm -v
 
 ## GETTING STARTED (DEVELOPMENT)
 
-1. Install dependencies:
+1. Install dependencies of the frontend project:
+
+Ensure you are in the 'Project-SLFW/frontend' folder.
 
 ```
 npm install
 ```
 
-2. tart the development server:
+2. Start the development server:
 
 ```
 npm run dev
 ```
 
-This starts a local Vite server (usually at http://localhost:5173/). It supports hot reload while developing.
+This starts a local Vite server (usually at http://localhost:5173/). It supports hot reload while developing (file saves refresh the browser).
 
 ## BUILDING FOR PRODUCTION
 
