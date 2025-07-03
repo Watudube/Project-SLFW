@@ -20,13 +20,7 @@ import "./HomePage.css";
 export default function HomePage() {
   // Subscribing to User Context (changes to context states should trigger re-render):
   const { userToken, isLoading, setIsLoading, guestLogin, logout } = useContext(UserContext);
-
-  // Initialize guest login if no token exists.
-  useEffect(() => {
-    if (!userToken && !isLoading) {
-      guestLogin();
-    }
-  }, [userToken, isLoading, guestLogin]);
+  console.log("HomePage mounting...");
 
   // WebSocket connection management:
   useEffect(() => {

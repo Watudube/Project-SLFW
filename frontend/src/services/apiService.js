@@ -41,10 +41,19 @@ class ApiService {
    * Get a guest token (TODO: This for for pre-authentificiation iteration of game).
    */
   async getGuestToken() {
+    console.log("Attempting guest-login...");
+
     // Endpoint for guest login:
-    return this.request("/auth/guest", {
+    const response = await this.request("/auth/token", {
       method: "POST",
     });
+    console.log("Guest-login successful:", response);
+
+    // Backend returns {userToken: "..."} but UserContext expects {token: "..."}
+    // Transform the response to match what UserContext expects
+    return {
+      token: response.userToken,
+    };
   }
 
   /**
