@@ -5,7 +5,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 def valid(token: str) -> bool:
     return token in auth_tokens
 
-router = APIRouter("/ws")
+router = APIRouter(prefix="/ws", tags=["ws"],)
 manager = ConnectionManager()
 
 @router.websocket("/game")

@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from typing import Dict
 import uuid
 
-router = APIRouter("/auth")
+router = APIRouter( prefix="/auth", tags=["auth"],)
 auth_tokens: Dict[str, int] = {}
 
 @router.post("/token")
