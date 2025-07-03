@@ -1,32 +1,16 @@
-import json
-import uuid
-from typing import Dict
+from app.apis.routers.auth_token import auth_tokens
 from .manager import ConnectionManager
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, HTTPException
-
-router = APIRouter()
-
-_token_store: Dict[str, int] = {}
-
-@router.post("/auth/token")
-def mint_token():
-    """
-    Return a one-off token to the client.
-    In production you'd tie this to a real user/session in your DB.
-    """
-    token = uuid.uuid4().hex
-    _token_store[token] = 1
-    return {"userToken": token}
-
-manager = ConnectionManager()
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 def valid(token: str) -> bool:
-    return token in _token_store
+    return token in auth_tokens
 
-@router.websocket("/ws/game")
-async def websocket_endpoint(ws: WebSocket):
+router = APIRouter("/ws")
+manager = ConnectionManager()
+
+@router.websocket("/game")
+async def game_ws(ws: WebSocket):
     await manager.connect(ws)
-    manager.active.append(ws)
 
     try:
         while True:

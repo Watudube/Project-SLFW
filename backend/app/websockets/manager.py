@@ -1,10 +1,9 @@
 import json
-from typing import List
 from fastapi import WebSocket
 
 class ConnectionManager:
     def __init__(self):
-        self.active: List[WebSocket] = []
+        self.active: list[WebSocket] = []
 
     async def connect(self, ws: WebSocket):
         await ws.accept()
