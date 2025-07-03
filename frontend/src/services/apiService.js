@@ -42,7 +42,7 @@ class ApiService {
    */
   async getGuestToken() {
     // Endpoint for guest login:
-    return this.request("/auth/guest", {
+    return this.request("/auth/token", {
       method: "POST",
     });
   }
