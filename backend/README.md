@@ -17,6 +17,8 @@ This directory contains the FastAPI backend application with WebSocket support, 
 
 - Python 3.11 or higher.
 
+## TODO: EVERYING BELOW NEEDS TO BE VARIFIED WITH MARSHALL (WAS NOT ABLE TO SPIN UP APPLICATION LOCALLY):
+
 ### 1. Create and Activate Virtual Environment
 
 ```bash
@@ -56,8 +58,6 @@ POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 REDIS_URL=redis://localhost:6379
 ```
-
-## TODO: EVERYING BELOW NEEDS TO BE VARIFIED WITH MARSHALL (WAS NOT ABLE TO SPIN UP APPLICATION LOCALLY):
 
 ### 4. Database Setup
 
