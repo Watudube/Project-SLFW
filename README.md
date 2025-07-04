@@ -48,9 +48,9 @@ docker compose down
 
 ### Access the Application
 
-- **Frontend**: http://localhost (port 80)
-- **Backend API**: http://localhost/api (proxied through nginx)
-- **WebSocket**: ws://localhost/ws/game (proxied through nginx)
+- **Frontend**: http://localhost (served through nginx, port 80)
+- **Backend API**: http://localhost/api (port 8000)
+- **WebSocket**: ws://localhost/ws/game (port 8000)
 - **Database**: localhost:5433 (external access)
 - **Redis**: localhost:6380 (external access)
 
@@ -79,7 +79,7 @@ For local development without Docker, see:
 
 ### Common Issues
 
-- **Port conflicts**: Ensure ports 80, 5433, 6380 are available
+- **Port conflicts**: Ensure ports 80, 8000, 5433, 6380 are available
 - **Environment variables**: Check `.env` file is properly configured
 - **Database connection**: Wait for postgres container to be ready before backend starts
 
