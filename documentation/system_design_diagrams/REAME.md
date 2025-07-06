@@ -38,13 +38,16 @@ Install the PLantUML extension by jebbs for quick previews using the online API 
 
     documentation/
     └── system_design_diagrams/
-        └── plantUML/
-            ├── shared/
-            ├── npc/
-            ├── world/
-            ├── economy/
-            ├── backend/
-            └── plantuml-mit-1.2025.3.jar
+        ├── sequence_diagrams/
+        └── class_diagrams/
+            ├── entity/
+            ├── tile/
+            ├── gameboard/
+            ├── service/
+            ├── types/
+            └── class_diagrams.puml
+        ├── plantuml-mit-1.2025.3.jar
+        └── REAMDME.md
 
 Each subfolder contains domain-specific `.puml` files.
 

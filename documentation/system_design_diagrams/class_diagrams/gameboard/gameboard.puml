@@ -1,0 +1,21 @@
+@startuml
+
+class Gameboard {
+  id: int
+  name: str
+  level_list: list[Level]
+  num_levels: int
+  current_level: Level
+  all_poi_list: list[Point_Of_Interest]
+}
+
+class Level {
+  id: int
+  name: str
+  level_width: int
+  level_height: int
+  tile_list: list[Tile]
+  entities: list[Entity]
+}
+
+@enduml

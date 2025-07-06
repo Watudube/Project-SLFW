@@ -93,7 +93,7 @@ This is a <u>living document</u> for the development of an indie game project th
 
 [Systems Design [17](#systems-design-1)](#systems-design-1)
 
-[References [18](#_Toc202384493)](#_Toc202384493)
+[References [18](#_Toc202576355)](#_Toc202576355)
 
 # Conceptualisation
 
@@ -251,14 +251,13 @@ This world is not just alive—it remembers. Overharvested forests dwindle, band
 
 ## (DI_V0.1) Proof of Concept Back-End Infrastructure
 
-The initial Tech-Stack will be designed to be monolithic as the project is intended to be small and resources of all categories (labour, budget, etc…) are limited. During coding however, encapsulation practices will be utilised to allow for future scaling and changes to the deployment architecture.
+The Tech-Stack and general systems design principles used will revolve around the concept of microservice architecture and encapsulation. The main advantage of this would be to more easily adopt horizontal scalability in the future, as is standard practise with cloud based live service software and games. As can be seen in the figure below, the initial tech-stack will be broken down into 4 separate containers: the static website, Redis DB, Postgres DB and the backend game service. Container deployment and management will be done through Docker-Compose.
 
 <u>The figure below showcases the basic monolithic tech-stack architecture</u>:
 
-<figure>
-<img src="design_document_media/media/image3.png" style="width:7.26806in;height:8.2625in" alt="A screenshot of a computer screen AI-generated content may be incorrect." />
-<figcaption><p>: Monolithic Tech-Stack Architecture of the Project.</p></figcaption>
-</figure>
+<img src="design_document_media/media/image3.png" style="width:7.26772in;height:7.26772in" alt="A diagram of a software system AI-generated content may be incorrect." />
+
+: Monolithic Tech-Stack Architecture of the Project.
 
 ### Tech Stack Description
 
@@ -268,11 +267,11 @@ React builds the user interface (UI) of the game, while Phaser handles the 2D ga
 
 **<u>Nginx</u>**:
 
-Nginx is a high-performance web server that serves static frontend files (like React+Phaser builds) and acts as a reverse proxy for API and WebSocket requests to the backend. It handles HTTPS termination, load balancing, and routes traffic cleanly to Uvicorn.
+Nginx is a high-performance web server that serves static frontend files (like React+Phaser builds) There is the potential to use Nginx for load balancing in the future, to help with optimising horizontal scaling of containers.
 
 **<u>Uvicorn</u>**:
 
-Uvicorn is an ASGI server that runs the FastAPI backend. It supports both HTTP and WebSocket protocols, managing connections and concurrency for real-time gameplay and standard API routes. It listens behind Nginx and executes the Python application code.
+Uvicorn is an ASGI server that runs the FastAPI backend and executes the Python application code. It supports both HTTP and WebSocket protocols, managing connections and concurrency for real-time gameplay and standard API routes.
 
 **<u>FastAPI + Pydantic + SQLAlchemy</u>**:
 
@@ -378,7 +377,7 @@ Alembic is a schema migration tool that tracks and applies changes to the Postgr
 
 ### Hybrid MVC Software Architectural Pattern
 
-The tech-stack described above allows for the project to implement a hybrid of the MVC software architecture pattern and real-time client-server sync: backend Models are mutated via controller logic (FastAPI), and changes are streamed to the frontend where lightweight client-side models are reconstructed and rendered. This allows authoritative world logic on the server while providing responsive client-side views.
+The tech-stack described above allows for the project to implement a hybrid of the MVC software architecture pattern and real-time client-server synchronisation. Backend models are mutated via backend application logic, and changes are streamed to the frontend where lightweight client-side models are reconstructed and rendered. This allows authoritative world logic on the server while providing responsive client-side views.
 
 In this hybrid architecture, it is imperative that all model state changes occur only at the backend which maintains the “Authoritative Source of Truth”, such that users are not able to maliciously compromise the integrity of the models’ state. Data sent to the frontend should only be what is required for the user’s client to render what the users are allowed to perceive, and only what information the users are allowed to know. Information sent back from the frontend should only be action requests that are validated when received by the backend.
 
@@ -468,11 +467,11 @@ Several 2D tile set, from <https://kenney.nl/> will be used for project SLFW’s
 
 The following standard design considerations are taken into account when designing and developing the project’s frontend’s application:
 
-- **Separation of Concerns**: Keep UI, game logic, and data/services separate.
+- **Separation of Concerns**: Keep UI, game logic, and data/services as separate as possible (can be difficult with React).
 
-- **Reusability**: Services and hooks can be reused across scenes and components.
+- **Reusability**: Services and hooks can be reused across scenes and components. For example, the API and WebSocket services will be singleton classes throughout the frontend.
 
-- **Scalability**: Structure supports adding new features (scenes, services, UI) without major refactoring.
+- **Scalability**: Structure of frontend supports adding new features (scenes, services, UI) without major refactoring.
 
 - **Responsiveness**: Phaser canvas resizes with its parent container. The React website itself to have layout considerations across 3 main aspect ratios: 21:9, 16:9 and 9:16, with an approximately 20% responsive buffer between each.
 
@@ -510,10 +509,20 @@ The following standard design considerations are taken into account when designi
 
 ### Systems Design
 
+#### Design Considerations
+
+The following are some design considerations that have been taken into account when developing the game’s backend classes and systems:
+
+- Service vs Entity Methods: <u>Entities MUST have action methods within its definition</u>, as physiological abilities would inherently be different from decision making abilities. I.e. not all animals would have the same “perception” logic or abilities (like a giraffe could look over walls without trying) – but they could all have the same decision-making logic regardless (like if a giraffe and zebra would both look for plants to eat, despite their perception difference). Thus, <u>decision making methods would fall under service classes</u>.
+
+- Actors’ Artificial Intelligence (the game NPC kind, not generative) systems will be based on generating priorities from a set of rules and algorithms. For example, if a grass eating animal is hungry, generate \[eat grass\]. If \[find grass\] is in the priority list, never generate \[eat grass\]. If a grass eating animal perceives grass, remove \[find grass\] from the priority list.
+
 #### Class Diagrams
 
 # References
 
 CipSoft. (n.d.). *Screenshots*. Retrieved from tiba.com: https://www.tibia.com/abouttibia/?subtopic=screenshots
+
+Kenney.nl. (2025). *Assets*. Retrieved from Kenny: 'www.kenney.nl
 
 MMO Reviews. (n.d.). *Tibia*. Retrieved from MMO Reviews: https://www.mmoreviews.com/tibi/

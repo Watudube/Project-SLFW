@@ -1,7 +1,7 @@
 @startuml
 
 abstract class Tile {
-  - id: uuid.UUID
+  - id: int
   - name: str
   - label: str
   - description: str

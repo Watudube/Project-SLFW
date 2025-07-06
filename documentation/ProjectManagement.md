@@ -108,7 +108,7 @@ Sprints will be largely defined by new or incrementally improved features, desig
 <u>The figure below illustrates the development loop the team will undertake</u>:
 
 <figure>
-<img src="project_management_media/media/image1.png" style="width:3.96875in;height:2.90625in" alt="A screenshot of a computer AI-generated content may be incorrect." />
+<img src="project_management_media/media/image1.png" style="width:5.84154in;height:2.664in" alt="A diagram of a software development process AI-generated content may be incorrect." />
 <figcaption><p>: Development methodology for Project SLFW.</p></figcaption>
 </figure>
 

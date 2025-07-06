@@ -1,14 +1,23 @@
 This README informs developers on how to use pandoc to create .md files from the .docx project documents.
 
-# Requirements
+# Updating the project documentation:
+
+## Requirements:
 
 Install pandoc on your system. https://pandoc.org
 
-# Warning to write access users of this folder.
+## Warning to write access users of this folder:
 
 Leave underline.lua alone, it's for converting .docx to .md
 
-# Converting from .docx to .md:
+## Transfer Living Documents
+
+Transfer the project's living .docx documents from the shared onedrive to the "documentation" folder in the repo. This would include:
+
+- 'Design Document.docx'
+- 'Project Management.docx'
+
+## Converting from .docx to .md:
 
 When converting .docx to .md, use the following terminal commands (make sure you're in the working directory where the .docx and underline.lua is located):
 
@@ -23,6 +32,10 @@ pandoc 'Design Document.docx' -o 'DesignDocument.md' --from=docx --to=gfm --extr
 pandoc 'Project Management.docx' -o 'ProjectManagement.md' --from=docx --to=gfm --extract-media='project_management_media' --standalone --wrap=preserve --lua-filter=underline.lua --toc
 ```
 
-### Post pandoc editing of .md files:
+## Post pandoc editing of .md files:
 
 After converting from .docx to .md, the .docx version of the Table of Contents (TOC) will remain unformatted (pandoc creates its own), the Title line from the .docx is also removed (pandoc doesn't conver Title headers). Remove the subtitle line and unformatted table of contents from the .md file before publishing.
+
+## Remove Living Documents From the Repo
+
+As per the header, delete the live documents from the repo, since we now have the .md version.
