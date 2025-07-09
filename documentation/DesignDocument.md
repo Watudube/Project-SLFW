@@ -255,7 +255,7 @@ The Tech-Stack and general systems design principles used will revolve around th
 
 <u>The figure below showcases the basic monolithic tech-stack architecture</u>:
 
-<img src="design_document_media/media/image3.png" style="width:7.26772in;height:7.26772in" alt="A diagram of a software system AI-generated content may be incorrect." />
+<img src="design_document_media/media/image3.png" style="width:7.26772in;height:7.26772in" />
 
 : Monolithic Tech-Stack Architecture of the Project.
 
@@ -384,7 +384,7 @@ In this hybrid architecture, it is imperative that all model state changes occur
 For example, an enemy is rendered by the frontend application using positional data from the backend, and only information regarding the enemy’s health is provided to the player – all other information is filtered out by the backend. The player can then choose to attack the enemy, which sends an action request to the backend, and is then validated. If perhaps the enemy is too far from the player, the validation fails, and the player is informed via a return message. If the enemy is indeed in range, the attack succeeds, and a state change occurs in the backend and the original model is updated. Subsequently, the updated model’s state is filtered again (to what is allowed for the frontend) and the updated data sent back to the frontend allows the re-rendering of the enemy with less health.
 
 <figure>
-<img src="design_document_media/media/image4.png" style="width:7.26772in;height:2.73177in" alt="A black background with white rectangles AI-generated content may be incorrect." />
+<img src="design_document_media/media/image4.png" style="width:7.26772in;height:2.96998in" alt="A diagram of a flowchart AI-generated content may be incorrect." />
 <figcaption><p>: Hybrid MVC abstraction.</p></figcaption>
 </figure>
 
@@ -516,6 +516,15 @@ The following are some design considerations that have been taken into account w
 - Service vs Entity Methods: <u>Entities MUST have action methods within its definition</u>, as physiological abilities would inherently be different from decision making abilities. I.e. not all animals would have the same “perception” logic or abilities (like a giraffe could look over walls without trying) – but they could all have the same decision-making logic regardless (like if a giraffe and zebra would both look for plants to eat, despite their perception difference). Thus, <u>decision making methods would fall under service classes</u>.
 
 - Actors’ Artificial Intelligence (the game NPC kind, not generative) systems will be based on generating priorities from a set of rules and algorithms. For example, if a grass eating animal is hungry, generate \[eat grass\]. If \[find grass\] is in the priority list, never generate \[eat grass\]. If a grass eating animal perceives grass, remove \[find grass\] from the priority list.
+
+#### Activity Diagrams
+
+**<u>Actor_AI_System</u>**:
+
+<figure>
+<img src="design_document_media/media/image14.png" style="width:7.26772in;height:5.2523in" />
+<figcaption><p>: The generic Actor_AI_System.</p></figcaption>
+</figure>
 
 #### Class Diagrams
 
