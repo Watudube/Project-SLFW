@@ -9,11 +9,9 @@ R = TypeVar("R", bound=BaseRepository)
 class BaseService(Generic[M, R]):
     def __init__(self, db: Session, model: Type[M], repo_class: Type[R]):
         self.repo: R = repo_class(db, model)
+        self.db = db
 
     def create(self, instance: dict) -> M:
-
-        # What happens if we create an overlapping pk, what handles?
-
         return self.repo.create(instance)
     
     def delete(self, instance_id: int) -> None:
