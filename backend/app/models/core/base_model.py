@@ -1,7 +1,6 @@
 from app.db.base import Base
-from sqlalchemy import Column, Integer
+from sqlalchemy import Integer, Column
 
-# Base model for all types of 
 class BaseModel(Base):
     __abstract__ = True
 

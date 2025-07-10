@@ -1,4 +1,4 @@
 from .entity import Entity
 
-class item(Entity):
+class Item(Entity):
     __abstract__ = True

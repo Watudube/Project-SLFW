@@ -1,11 +1,12 @@
 from .base_model import BaseModel
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, Integer, ForeignKey
 
 class Entity(BaseModel):
     __abstract__ = True
 
+    tile_id = Column(Integer, ForeignKey("tiles.id"), nullable=False)
     name = Column(String, nullable=False)
     label = Column(String, nullable=False)
     description = Column(String, nullable=False)
-    x_coord = Column(Integer, nullable=False)
-    y_coord = Column(Integer, nullable=False)
+    sprite = Column(String, nullable=False)
+    
