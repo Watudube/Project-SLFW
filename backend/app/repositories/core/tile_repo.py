@@ -7,7 +7,12 @@ class TileRepository(BaseRepository):
         super().__init__(db, Tile)
 
     def get_tile(self, tile_id: int) -> Tile | None:
-        return (self.db.query(Tile).filter(Tile.id == tile_id))
+        return (
+            self.db.query(Tile)
+            .options(selectinload(Tile.entities))
+            .filter(Tile.id == tile_id)
+            .first()
+        )
     
     def get_subsection(self, level_id: int, x_start: int, x_end: int, y_start: int, y_end: int) -> list[Tile]:
         return (
