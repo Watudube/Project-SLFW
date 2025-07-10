@@ -11,12 +11,6 @@ class EntityService(BaseService[M, R], Generic[M, R]):
     def __init__(self, db: Session, model: type[M], repo_class: type[R]):
         super().__init__(db, model, repo_class)
 
-    def get_position(self, entity_id: int) -> tuple[int, int]:
-        position = self.repo.get_position(entity_id)
-        if not position:
-            raise ValueError(f"Model instance with id:{entity_id} not found")
-        return position
-
     def get_name(self, entity_id: int) -> str:
         return self.get(entity_id).name
     
@@ -25,3 +19,6 @@ class EntityService(BaseService[M, R], Generic[M, R]):
     
     def get_description(self, entity_id: int) -> str:
         return self.get(entity_id).description
+    
+    def get_sprite(self, entity_id: int) -> str:
+        return self.get(entity_id).sprite
