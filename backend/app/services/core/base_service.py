@@ -15,10 +15,8 @@ class BaseService(Generic[M, R]):
         return self.repo.create(instance)
     
     def delete(self, instance_id: int) -> None:
-        model = self.repo.get(instance_id)
-        if not model:
-            raise ValueError(f"Model instance with id:{instance_id} not found")
-        self.repo.delete(model)
+        instance = self.get(instance_id)
+        self.repo.delete(instance)
 
     def get(self, instance_id: int) -> M:
         instance = self.repo.get(instance_id)
