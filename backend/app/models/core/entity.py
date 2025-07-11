@@ -1,6 +1,6 @@
 from .base_model import BaseModel
 from sqlalchemy import Column, String, Integer, ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, declared_attr
 
 class Entity(BaseModel):
     __abstract__ = True
@@ -11,8 +11,10 @@ class Entity(BaseModel):
     description = Column(String, nullable=False)
     sprite = Column(String, nullable=False)
 
-    tile = relationship(
-        "Tile",
-        back_populates="entities",
-        lazy="joined"
-    )
+    @declared_attr
+    def tile(cls):
+        return relationship(
+            "Tile",
+            back_populates="entities",
+            lazy="joined"
+        )
