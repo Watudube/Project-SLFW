@@ -37,7 +37,7 @@ class WebSocketService {
       // Join game session with the user token. On successful connection,
       // the server should send back a confirmation message and game data.
       console.log(`Joining game with user token: ${this.userToken}.`);
-      this.socket.send(JSON.stringify({ type: "join_game", user_token: this.userToken }));
+      this.socket.send(JSON.stringify({ type: "join_game", userToken: this.userToken }));
 
       this.isConnected = true;
       this.reconnectAttempts = 0; // Reset reconnect counter on successful connection.
@@ -46,7 +46,9 @@ class WebSocketService {
 
     // Event handler: Fires when server sends a message.
     this.socket.onmessage = (event) => {
+      console.log("WS message recieved,");
       const data = JSON.parse(event.data); // Convert JSON string to JS object.
+      console.log(`WS message data: ${data}`);
       this.routeMessage(data); // Route message to appropriate handler based on message type.
     };
 
@@ -73,7 +75,7 @@ class WebSocketService {
       console.log(`Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
 
       setTimeout(() => {
-        this.connect();
+        this.connect(WEBSOCKET_BASEURL, userToken);
       }, 3000); // Wait 3 seconds before trying again.
     } else {
       console.error("Failed to reconnect after maximum attempts.");
@@ -92,7 +94,7 @@ class WebSocketService {
       this.socket.send(
         // Create standardized message format for server:
         JSON.stringify({
-          user_token: this.userToken, // Include user token for authentication.
+          userToken: this.userToken, // Include user token for authentication.
           type: "player_action", // Specify message type as player action.
           action, // Specific player action type.
           data, // Action data payload.
@@ -106,6 +108,8 @@ class WebSocketService {
    * @param {object} message - Parsed JSON message from server.
    */
   routeMessage(message) {
+    console.log("Routing incoming WS message to handlers...");
+
     const { type, data } = message;
 
     // TODO: Adjust or add more message handler types as needed.
