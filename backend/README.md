@@ -142,6 +142,10 @@ _This is not implemented yet, so no action required for now._
    - PostgreSQL: host, username, password, port, database name
    - Redis (if applicable)
 
+Note behaviour in vscode terminal. When switching between running postgres through docker and running it locally,
+you have to change the hostname in .env appropriately otherwise you will get an error. After you change the value,
+use a new powershell instance otherwise you may continue to get an error. Seems there is some caching behaviour.
+
 ---
 
 ## 🧬 Alembic Migrations
