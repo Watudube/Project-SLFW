@@ -1,72 +1,96 @@
 from app.apis.routers.auth_token import auth_tokens
-from .manager import ConnectionManager
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from app.services.core.gameboard_service import GameboardService
-from app.schemas.core.gameboard_schema import EmptyGameboardOut
-from fastapi import Depends
-from sqlalchemy.orm import Session
 from app.db.session import get_session
+from app.schemas.core.gameboard_schema import EmptyGameboardOut
+from app.services.core.gameboard_service import GameboardService
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from sqlalchemy.orm import Session
+
+from .manager import ConnectionManager
+
 
 def valid(token: str) -> bool:
     return token in auth_tokens
 
-router = APIRouter(prefix="/ws", tags=["ws"],)
+
+router = APIRouter(
+    prefix="/ws",
+    tags=["ws"],
+)
 manager = ConnectionManager()
-
-@router.websocket("/game/start")
-async def game_start(ws: WebSocket, db: Session = Depends(get_session)):
-    gameboard_service = GameboardService(db)
-    await manager.connect(ws)
-
-    try:
-        data = await ws.receive_json()
-        if not isinstance(data, dict):
-            await manager.send({"error": "Invalid JSON object"}, ws)
-            await ws.close(code=1003)
-            return
-        token = data.pop("userToken", None)
-        if not token or not valid(token):
-            await ws.close(code=1008, reason="Invalid token")
-            return
-
-        empty_gameboard = gameboard_service.get_empty_gameboard()
-        initial_gameboard = EmptyGameboardOut.model_validate(empty_gameboard)
-        await manager.send(initial_gameboard.model_dump(), ws)
-
-    except WebSocketDisconnect:
-        return
-
-    except Exception as e:
-        await manager.send({"error": f"{str(e)}"}, ws)
-        await ws.close(code=1011)
-        return
-    
-    finally:
-        manager.disconnect(ws)
 
 
 @router.websocket("/game")
-async def game_ws(ws: WebSocket):
+async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
     await manager.connect(ws)
+    gameboard_service = GameboardService(db)
 
     try:
         while True:
             data = await ws.receive_json()
+
+            if not isinstance(data, dict):
+                await manager.send({"error": "Invalid JSON object"}, ws)
+                continue
+
             token = data.get("userToken")
             if not token or not valid(token):
                 await ws.close(code=1008, reason="Invalid token")
                 return
-            data.pop("userToken")
 
+            message_type = data.get("type")
 
-            if data["type"] == "move":
-                await manager.broadcast({
-                    "type": "entity_moved",
-                    "entityId": data["entityId"],
-                    "x": data["x"],
-                    "y": data["y"],
-                })
+            if message_type == "join_game":
+                try:
+                    empty_gameboard = gameboard_service.get_empty_gameboard()
+                    initial_gameboard = EmptyGameboardOut.model_validate(
+                        empty_gameboard
+                    )
+
+                    await manager.send(
+                        {
+                            "type": "join_game_response",
+                            "data": initial_gameboard.model_dump(),
+                            "status": "success",
+                        },
+                        ws,
+                    )
+                except Exception as e:
+                    await manager.send(
+                        {
+                            "type": "join_game_response",
+                            "error": f"Failed to load gameboard: {str(e)}",
+                            "status": "error",
+                        },
+                        ws,
+                    )
+
+            elif message_type == "player_action":
+                action = data.get("action")
+                action_data = data.get("data")
+
+                if action == "move":
+                    await manager.broadcast(
+                        {
+                            "type": "entity_update",
+                            "entityId": action_data.get("entityId"),
+                            "x": action_data.get("x"),
+                            "y": action_data.get("y"),
+                        }
+                    )
+            else:
+                await manager.send(
+                    {
+                        "type": "error",
+                        "message": f"Unknown message type: {message_type}",
+                    },
+                    ws,
+                )
 
     except WebSocketDisconnect:
         manager.disconnect(ws)
-        await manager.broadcast({"type": "connection ended"})
+        await manager.broadcast({"type": "player_disconnected"})
+    except Exception as e:
+        await manager.send({"error": f"Server error: {str(e)}"}, ws)
+        await ws.close(code=1011)
+    finally:
+        manager.disconnect(ws)
