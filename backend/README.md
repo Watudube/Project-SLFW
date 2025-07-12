@@ -113,6 +113,12 @@ redis-server --version
    \l
    ```
 
+3. Exit PostgreSQL shell (if necessary):
+
+   ```sql
+   exit
+   ```
+
 > 💡 Remember your database name — you’ll need it in your `.env`.
 
 ---
