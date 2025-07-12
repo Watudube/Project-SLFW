@@ -1,6 +1,10 @@
-from .base_schema import BaseSchema
-from .level_schema import EmptyLevelOut
+from .base_schema import BaseOut, BaseIn
+from .level_schema import LevelOut, LevelIn
 
-class EmptyGameboardOut(BaseSchema):
+class GameboardOut(BaseOut):
     num_levels: int
-    levels: list[EmptyLevelOut]
+    levels: list[LevelOut]
+
+class GameboardIn(BaseIn):
+    num_levels: int
+    levels: list[LevelIn]

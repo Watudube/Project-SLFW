@@ -1,21 +1,17 @@
-from ..core.actor_schema import ActorSchema, ActorSchemaUpdate
+from ..core.actor_schema import ActorOut, ActorIn, ActorUpdate
 from typing import Optional
 
 # For returning human data in a response
-class HumanOut(ActorSchema):
-    id:       int
+class HumanOut(ActorOut):
     hunger:   int
-    thirst:   int
     strength: int
 
 
-class HumanIn(ActorSchema):
+class HumanIn(ActorIn):
     hunger:   int
-    thirst:   int
     strength: int
 
 
-class HumanUpdate(ActorSchemaUpdate):
+class HumanUpdate(ActorUpdate):
     hunger: Optional[int]
-    thirst: Optional[int]
     strength: Optional[int]

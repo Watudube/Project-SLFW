@@ -1,17 +1,16 @@
-from .base_schema import BaseSchema, BaseSchemaUpdate
-from typing import Optional
+from .base_schema import BaseOut, BaseIn, BaseUpdate
 
-class EntitySchema(BaseSchema):
+class EntityOut(BaseOut):
     name:        str
     label:       str
     description: str
-    x_coord:     int
-    y_coord:     int
+    sprite:      str
 
+class EntityIn(BaseIn):
+    name:        str
+    label:       str
+    description: str
+    sprite:      str
 
-class EntitySchemaUpdate(BaseSchemaUpdate):
-    name: Optional[str]
-    label: Optional[str]
-    description: Optional[str]
-    x_coord: Optional[int]
-    y_coord: Optional[int]
+class EntityUpdate(BaseUpdate):
+    pass
