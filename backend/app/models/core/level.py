@@ -7,6 +7,7 @@ class Level(BaseModel):
     __tablename__ = "levels"
 
     gameboard_id = Column(Integer, ForeignKey("gameboard.id"), nullable=False)
+    z_index = Column(Integer, nullable=False)
     length = Column(Integer, nullable=False)
     width = Column(Integer, nullable=False)
 
