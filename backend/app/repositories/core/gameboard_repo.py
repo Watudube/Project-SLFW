@@ -5,8 +5,8 @@ from app.models.core.level import Level
 from app.models.core.tile import Tile
 
 class GameboardRepository(BaseRepository):
-    def __init__(self, db: Session):
-        super().__init__(db, Gameboard)
+    def __init__(self, db: Session, model: Gameboard = Gameboard):
+        super().__init__(db, model)
     
     def get_gameboard(self) -> Gameboard:
         return (

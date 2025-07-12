@@ -4,8 +4,8 @@ from app.models.core.level import Level
 from app.models.core.tile import Tile
 
 class LevelRepository(BaseRepository):
-    def __init__(self, db: Session):
-        super().__init__(db, Level)
+    def __init__(self, db: Session, model: Level = Level):
+        super().__init__(db, model)
     
     def get_level_dimensions(self, level_id: int) -> tuple[int, int] | None:
         return (
