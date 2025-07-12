@@ -1,6 +1,8 @@
-# Backend Development Guide
+# 🧰 Project Setup Guide
 
-This directory contains the FastAPI backend application with WebSocket support, PostgreSQL database integration, and Redis caching.
+This guide walks you through setting up the backend environment for the project.
+
+---
 
 ## Architecture
 
@@ -10,76 +12,6 @@ This directory contains the FastAPI backend application with WebSocket support, 
 - **Pydantic**: Data validation and settings management.
 - **WebSockets**: Real-time game communication.
 - **Redis**: Session and cache management.
-
-## Local Development Setup
-
-### Prerequisites
-
-- Python 3.11 or higher.
-
-### 1. Create and Activate Virtual Environment
-
-```bash
-# Create virtual environment (if you haven't yet).
-python -m venv .venv
-
-# Activate virtual environment (Windows).
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-
-.venv\Scripts\activate
-
-# Activate virtual environment (macOS/Linux).
-source .venv/bin/activate
-```
-
-### 2. Install Dependencies
-
-```bash
-# Install all required packages.
-pip install -r requirements.txt
-```
-
-```bash
-# To exit virtual environment (if necessary).
-deactivate
-```
-
-### 3. Environment Configuration (if you haven't yet)
-
-Create a `.env` file in the backend directory (for local development. Seek project manager for .env credentials):
-
-```env
-POSTGRES_USER=
-POSTGRES_PASSWORD=
-POSTGRES_DB=
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
-REDIS_URL=redis://localhost:6379
-```
-
-## TODO: EVERYING BELOW NEEDS TO BE VARIFIED AND EDITTED BY MARSHALL TO REFLECT CREATING A LOCAL DEVELOPMENT ENVIROMENT FOR BACKEND (WAS NOT ABLE TO SPIN UP APPLICATION LOCALLY):
-
-### 4. Database Setup
-
-```bash
-# Run database migrations
-alembic upgrade head
-
-# Create new migration (after model changes)
-alembic revision --autogenerate -m "description of changes"
-```
-
-### 5. Run the Application
-
-```bash
-# Start development server with auto-reload
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-
-# Access the application
-# API: http://localhost:8000
-# WebSocket: ws://localhost:8000/ws/game
-# API Documentation: http://localhost:8000/docs
-```
 
 ## Project Structure
 
@@ -99,58 +31,140 @@ backend/
 └── Dockerfile               # Container configuration
 ```
 
-## Development Workflow
+---
 
-### Database Migrations
+## 📦 Prerequisites
 
-```bash
-# Create migration after model changes
-alembic revision --autogenerate -m "add new field to human model"
+Ensure the following are installed:
 
-# Apply migrations
-alembic upgrade head
+- **Python 3.11+**
+- **PostgreSQL**
+  - [Download here](https://www.enterprisedb.com/downloads/postgres-postgresql-downloads)
+  - Recommended:
+    - Accept default settings during installation.
+    - Remember your **host**, **username**, **password**, and **port**.
+    - Install **pgAgent** under "Add-ons, tools and utilities."
+- **Redis** (optional, not currently implemented)
 
-# Rollback last migration
-alembic downgrade -1
+---
 
-# View migration history
-alembic history
-```
+## ✅ Verify Installations
 
-### Testing Database Operations
-
-```bash
-# Connect to local PostgreSQL
-psql -U your_username -d slfw_db
-
-# Useful psql commands
-\dt          # List all tables
-\d humans    # Describe humans table
-\q           # Quit psql
-```
-
-## Useful Commands
-
-### Virtual Environment Management
+Open a terminal and run:
 
 ```bash
-# Deactivate virtual environment
-deactivate
-
-# Reinstall dependencies (if requirements.txt changes)
-pip install -r requirements.txt
-
-# Update requirements file
-pip freeze > requirements.txt
+python --version
+psql --version
+redis-server --version
 ```
 
-### Development Server Options
+> If any command fails (e.g. `'psql' is not recognized...`), PostgreSQL or Redis may not be installed correctly or is missing from your system PATH.
+
+---
+
+## 📂 Backend Environment Setup
+
+1. Open a terminal in the `backend` directory.
+2. Create a virtual environment:
+
+   ```bash
+   python -m venv .venv
+   ```
+
+3. Activate the virtual environment:
+
+   ```bash
+    # (Not required if execution is not blocked)
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+
+   .venv\Scripts\Activate
+   ```
+
+4. Install required Python packages:
+
+   ```bash
+   pip install -r requirements.txt
+
+   # If you want to deactivate the virtual environment
+   deactivate
+   ```
+
+---
+
+## 🧠 PostgreSQL Setup
+
+1. Open the PostgreSQL shell:
+
+   ```bash
+   psql -U postgres
+   ```
+
+   > Enter the password you created during installation.
+
+2. If no database exists yet:
+
+   ```sql
+   CREATE DATABASE your_database_name;
+   ```
+
+3. Confirm it was created:
+
+   ```sql
+   \l
+   ```
+
+> 💡 Remember your database name — you’ll need it in your `.env`.
+
+---
+
+## 🧪 Redis Setup
+
+_This is not implemented yet, so no action required for now._
+
+---
+
+## 🔐 Environment Configuration
+
+1. In the **project root**, create a `.env` file (if it doesn't exist).
+2. Copy from `.env.example` as a starting template:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Set all necessary variables:
+   - PostgreSQL: host, username, password, port, database name
+   - Redis (if applicable)
+
+---
+
+## 🧬 Alembic Migrations
+
+1. Make sure you’re in the `backend` directory.
+2. Run the following command:
+
+   ```bash
+   alembic upgrade head
+   ```
+
+3. If it fails and `alembic/versions/` is empty, create a migration:
+
+   ```bash
+   alembic revision --autogenerate -m "Initial migration"
+   alembic upgrade head
+   ```
+
+---
+
+## 🚀 Run the Backend Server
+
+From the `backend` folder, run:
 
 ```bash
 # Basic server start
 uvicorn app.main:app
 
-# Development mode with auto-reload
+# Development mode with auto-reload (recommended unless debugging or require custom)
 uvicorn app.main:app --reload
 
 # Custom host and port

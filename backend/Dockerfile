@@ -13,6 +13,3 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy rest of backend source code
 COPY . .
-
-# Run FastAPI using Uvicorn (development server)
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
