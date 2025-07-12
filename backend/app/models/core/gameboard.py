@@ -6,8 +6,9 @@ class Gameboard(BaseModel):
     __tablename__ = "gameboard"
 
     num_levels = Column(Integer)
+    
     levels = relationship(
-        "Level",
+        "app.models.core.level.Level",
         back_populates="gameboard",
         cascade="all, delete-orphan",
         lazy="selectin"

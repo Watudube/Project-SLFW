@@ -1,6 +1,7 @@
 from .base_model import BaseModel
 from sqlalchemy import Column, String, Integer, Boolean, ForeignKey, UniqueConstraint, Index, CheckConstraint
 from sqlalchemy.orm import relationship
+from app.models.core.entity import Entity
 
 class Tile(BaseModel):
     __tablename__ = "tiles"
@@ -25,7 +26,7 @@ class Tile(BaseModel):
     )
 
     entities = relationship(
-        "Entity",
+        "app.models.core.entity.Entity",
         back_populates="tile",
         lazy="selectin",
     )

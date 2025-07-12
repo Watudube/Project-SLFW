@@ -16,7 +16,7 @@ class Level(BaseModel):
     )
 
     tiles = relationship(
-        "Tile",
+        "app.models.core.tile.Tile",
         back_populates="level",
         cascade="all, delete-orphan",
         lazy="selectin",

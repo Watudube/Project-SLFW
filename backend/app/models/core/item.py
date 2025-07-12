@@ -1,4 +1,6 @@
 from .entity import Entity
-
+from sqlalchemy import Column, Integer, ForeignKey
 class Item(Entity):
-    __abstract__ = True
+    __tablename__ = "items"
+
+    id = Column(Integer, ForeignKey("entities.id"), primary_key=True)
