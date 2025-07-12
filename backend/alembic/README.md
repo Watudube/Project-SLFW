@@ -4,7 +4,7 @@ Generic single-database configuration.
 
 To create a migration script with automatic SQL generation
 ```
-alembic revision --autogenerate -m "alembic revision message"
+alembic revision --autogenerate -m "{alembic revision message}"
 ```
 
 
