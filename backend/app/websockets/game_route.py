@@ -2,7 +2,7 @@ from app.apis.routers.auth_token import auth_tokens
 from .manager import ConnectionManager
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from app.services.core.gameboard_service import GameboardService
-from app.schemas.core.gameboard_schema import EmptyGameboardOut
+from app.schemas.core.gameboard_schema import GameboardOut
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from app.db.session import get_session
@@ -30,7 +30,7 @@ async def game_start(ws: WebSocket, db: Session = Depends(get_session)):
             return
 
         empty_gameboard = gameboard_service.get_empty_gameboard()
-        initial_gameboard = EmptyGameboardOut.model_validate(empty_gameboard)
+        initial_gameboard = GameboardOut.model_validate(empty_gameboard)
         await manager.send(initial_gameboard.model_dump(), ws)
 
     except WebSocketDisconnect:
