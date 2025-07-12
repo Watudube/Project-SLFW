@@ -17,8 +17,6 @@ This directory contains the FastAPI backend application with WebSocket support, 
 
 - Python 3.11 or higher.
 
-## TODO: EVERYING BELOW NEEDS TO BE VARIFIED WITH MARSHALL (WAS NOT ABLE TO SPIN UP APPLICATION LOCALLY):
-
 ### 1. Create and Activate Virtual Environment
 
 ```bash
@@ -48,16 +46,18 @@ deactivate
 
 ### 3. Environment Configuration (if you haven't yet)
 
-Create a `.env` file in the backend directory:
+Create a `.env` file in the backend directory (for local development. Seek project manager for .env credentials):
 
 ```env
-POSTGRES_USER=your_username
-POSTGRES_PASSWORD=your_password
-POSTGRES_DB=slfw_db
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+POSTGRES_DB=
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
 REDIS_URL=redis://localhost:6379
 ```
+
+## TODO: EVERYING BELOW NEEDS TO BE VARIFIED AND EDITTED BY MARSHALL TO REFLECT CREATING A LOCAL DEVELOPMENT ENVIROMENT FOR BACKEND (WAS NOT ABLE TO SPIN UP APPLICATION LOCALLY):
 
 ### 4. Database Setup
 
