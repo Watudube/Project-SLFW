@@ -26,18 +26,18 @@ async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
 
     try:
         while True:
-            data = await ws.receive_json()
+            message = await ws.receive_json()
 
-            if not isinstance(data, dict):
+            if not isinstance(message, dict):
                 await manager.send({"error": "Invalid JSON object"}, ws)
                 continue
 
-            token = data.get("userToken")
+            token = message.get("userToken")
             if not token or not valid(token):
                 await ws.close(code=1008, reason="Invalid token")
                 return
 
-            message_type = data.get("type")
+            message_type = message.get("type")
 
             if message_type == "join_game":
                 try:
@@ -65,8 +65,8 @@ async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
                     )
 
             elif message_type == "player_action":
-                action = data.get("action")
-                action_data = data.get("data")
+                action = message.get("action")
+                action_data = message.get("data")
 
                 if action == "move":
                     await manager.broadcast(
