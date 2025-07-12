@@ -48,7 +48,9 @@ class WebSocketService {
     this.socket.onmessage = (event) => {
       console.log("WS message recieved,");
       const data = JSON.parse(event.data); // Convert JSON string to JS object.
-      console.log(`WS message data: ${data}`);
+      console.log(`WS message data:`);
+      console.log(data);
+
       this.routeMessage(data); // Route message to appropriate handler based on message type.
     };
 
@@ -75,7 +77,7 @@ class WebSocketService {
       console.log(`Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
 
       setTimeout(() => {
-        this.connect(WEBSOCKET_BASEURL, userToken);
+        this.connect(WEBSOCKET_BASEURL, this.userToken);
       }, 3000); // Wait 3 seconds before trying again.
     } else {
       console.error("Failed to reconnect after maximum attempts.");
@@ -124,7 +126,20 @@ class WebSocketService {
         this.emit("playerUpdate", data);
         break;
       case "join_game_response":
-        console.log("Successfully joined game:", data);
+        if (message.status === "success") {
+          console.log("Successfully joined game:", data);
+          this.emit("gameJoined", data);
+        } else {
+          console.error("Failed to join game:", message.error);
+          this.emit("gameJoinError", message.error);
+        }
+        break;
+      case "player_disconnected":
+        this.emit("playerDisconnected", data);
+        break;
+      case "error":
+        console.error("Server error:", message.message);
+        this.emit("serverError", message.message);
         break;
       default:
         console.warn("Unknown message type:", type);
