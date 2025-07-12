@@ -1,13 +1,18 @@
-from .entity import EntitySchema, EntitySchemaUpdate
+from .entity import EntityOut, EntityIn, EntityUpdate
 from typing import Optional
 
-class ActorSchema(EntitySchema):
+class ActorOut(EntityOut):
+    health:           int
+    speed:            int
+    perception_range: int
+
+class ActorIn(EntityIn):
     health:           int
     speed:            int
     perception_range: int
 
 
-class ActorSchemaUpdate(EntitySchemaUpdate):
+class ActorUpdate(EntityUpdate):
     health: Optional[int]
     speed: Optional[int]
     perception_range: Optional[int]
