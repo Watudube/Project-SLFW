@@ -99,7 +99,7 @@ export default function PhaserComponent({ websocketService, userToken }) {
           default: "arcade", // Using Arcade Physics system. TODO: Change if needed.
           arcade: {
             gravity: { y: 200 }, // TODO: Change physics system if needed.
-            debug: true, // TODO: Set to false in production!!! Shows collision boxes and other debug info.
+            debug: false, // TODO: Set to false in production!!! Shows collision boxes and other debug info.
           },
         },
       };
@@ -107,12 +107,17 @@ export default function PhaserComponent({ websocketService, userToken }) {
       // Create the Phaser game instance.
       gameRef.current = new Phaser.Game(PhaserConfig);
 
-      // Pass websocket service to the scene after creation.
+      // Wait for scene to be ready before passing WebSocket service
       if (websocketService && gameRef.current) {
-        const scene = gameRef.current.scene.getScene(SCENE_KEYS.OVERWORLD_SCENE);
-        if (scene) {
-          scene.setWebSocketService(websocketService);
-        }
+        gameRef.current.events.once("ready", () => {
+          const scene = gameRef.current.scene.getScene(SCENE_KEYS.OVERWORLD_SCENE);
+          if (scene) {
+            scene.setWebSocketService(websocketService);
+            console.log("✅ WebSocket service passed to scene");
+          } else {
+            console.error("❌ Scene not found when setting WebSocket service");
+          }
+        });
       }
     }
 

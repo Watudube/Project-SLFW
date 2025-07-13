@@ -35,7 +35,7 @@ class OverworldScene extends Phaser.Scene {
 
     // Input throttling properties:
     this.lastInputTime = 0; // milliseconds
-    this.inputThrottle = 100; // milliseconds
+    this.inputThrottle = 200; // milliseconds
   }
 
   /**
@@ -70,22 +70,15 @@ class OverworldScene extends Phaser.Scene {
    */
   create() {
     console.log(`${SCENE_KEYS.OVERWORLD_SCENE} creating scene...`);
+
     // Adding a background image to the scene.
     this.add.image(400, 300, "sky"); // (x position, y position, key)
-
-    const particles = this.add.particles(0, 0, "red", {
-      speed: 100,
-      scale: { start: 1, end: 0 },
-      blendMode: "ADD",
-    });
 
     const logo = this.physics.add.image(400, 100, "logo");
 
     logo.setVelocity(100, 200);
     logo.setBounce(1, 1);
     logo.setCollideWorldBounds(true);
-
-    particles.startFollow(logo);
 
     // WIP: Store the logo as our player for now
     this.player = logo;
@@ -101,9 +94,11 @@ class OverworldScene extends Phaser.Scene {
    * Handle player input and send actions to server.
    */
   handleInput() {
-    // If WebSocket service is not connected, do nothing, ensuring that we only
-    // send actions when the connection is active.
-    if (!this.websocketService || !this.websocketService.isConnected) return;
+    // // If WebSocket service is not connected, do nothing, ensuring that we only
+    // // send actions when the connection is active.
+    // if (!this.websocketService || !this.websocketService.isConnected) {
+    //   return;
+    // }
 
     // Throttle input to prevent spamming actions.
     const currentTime = this.time.now;
@@ -130,6 +125,9 @@ class OverworldScene extends Phaser.Scene {
 
     // Send action to server if we have one.
     if (action) {
+      console.log(`Player Input: ${action}; Data:`);
+      console.log(data);
+
       this.websocketService.sendPlayerAction(action, data);
       this.lastInputTime = currentTime; // Update last input time to throttle further actions.
     }
