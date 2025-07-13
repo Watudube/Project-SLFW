@@ -1,10 +1,11 @@
 from app.apis.routers.auth_token import auth_tokens
-from sqlalchemy.orm import Session
-from .manager import ConnectionManager
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from app.db.session import get_session
+from app.schemas.core.gameboard_schema import GameboardOut
 from app.services.core.gameboard_service import GameboardService
-from app.schemas.core.gameboard_schema import GameboardOut    
-from app.db.session import get_session 
+from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from sqlalchemy.orm import Session
+
+from .manager import ConnectionManager
 
 router = APIRouter(
     prefix="/ws",
@@ -45,7 +46,7 @@ async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
                     await manager.send(
                         {
                             "type": "join_game_response",
-                            "data": initial_gameboard.model_dump(),
+                            "data": {"initial_gameboard" : initial_gameboard.model_dump()},
                             "status": "success",
                         },
                         ws,
