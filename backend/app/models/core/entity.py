@@ -1,6 +1,6 @@
 from .base_model import BaseModel
 from sqlalchemy import Column, String, Integer, ForeignKey
-from sqlalchemy.orm import relationship, declared_attr
+from sqlalchemy.orm import relationship
 
 class Entity(BaseModel):
     __tablename__ = "entities"
