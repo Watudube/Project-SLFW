@@ -1,12 +1,19 @@
 from app.apis.routers.auth_token import auth_tokens
 from sqlalchemy.orm import Session
 from .manager import ConnectionManager
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from app.services.core.gameboard_service import GameboardService
+from app.schemas.core.gameboard_schema import GameboardOut    
+from app.db.session import get_session 
 
 router = APIRouter(
     prefix="/ws",
     tags=["ws"],
 )
 manager = ConnectionManager()
+
+def valid(token: str) -> bool:
+    return token in auth_tokens
 
 @router.websocket("/game")
 async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
@@ -31,7 +38,7 @@ async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
             if message_type == "join_game":
                 try:
                     empty_gameboard = gameboard_service.get_empty_gameboard()
-                    initial_gameboard = EmptyGameboardOut.model_validate(
+                    initial_gameboard = GameboardOut.model_validate(
                         empty_gameboard
                     )
 
