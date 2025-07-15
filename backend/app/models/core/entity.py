@@ -6,7 +6,7 @@ class Entity(BaseModel):
     __tablename__ = "entities"
 
     tile_id = Column(Integer, ForeignKey("tiles.id"), nullable=False)
-    name = Column(String, nullable=False)
+    type = Column(String, nullable=False)
     label = Column(String, nullable=False)
     description = Column(String, nullable=False)
     sprite = Column(String, nullable=False)

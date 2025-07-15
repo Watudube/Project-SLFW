@@ -11,8 +11,8 @@ class EntityService(BaseService[M, R], Generic[M, R]):
     def __init__(self, db: Session, model: type[M], repo_class: type[R]):
         super().__init__(db, model, repo_class)
 
-    def get_name(self, entity_id: int) -> str:
-        return self.get(entity_id).name
+    def get_type(self, entity_id: int) -> str:
+        return self.get(entity_id).type
     
     def get_label(self, entity_id: int) -> str:
         return self.get(entity_id).label

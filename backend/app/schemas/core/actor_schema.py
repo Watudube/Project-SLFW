@@ -1,4 +1,4 @@
-from .entity import EntityOut, EntityIn, EntityUpdate
+from .entity_schema import EntityOut, EntityIn, EntityUpdate
 from typing import Optional
 
 class ActorOut(EntityOut):

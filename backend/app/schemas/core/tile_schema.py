@@ -1,5 +1,5 @@
 from .base_schema import BaseOut, BaseIn
-from .entity import EntityOut, EntityIn
+from .entity_schema import EntityOut, EntityIn
 
 class TileOut(BaseOut):
     x_coord: int

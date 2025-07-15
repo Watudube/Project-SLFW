@@ -11,5 +11,11 @@ class HumanService(ActorService[M, R], Generic[M, R]):
     def __init__(self, db: Session, model: type[M] = Human, repo_class: type[R] = HumanRepository):
         super().__init__(db, model, repo_class)
 
+    def get_name(self, human_id: int) -> str:
+        return self.get(human_id).name
+
+    def get_hunger(self, human_id: int) -> str:
+        return self.get(human_id).hunger
+
     def get_strength(self, human_id: int) -> int:
         return self.get(human_id).strength
