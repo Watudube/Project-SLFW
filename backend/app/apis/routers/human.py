@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from backend.app.schemas.humans.human_schema import HumanOut, HumanIn
+from app.schemas.humans.human_schema import HumanOut, HumanIn
 from app.services.humans.human_service import HumanService
 from app.db.session import get_session
 
