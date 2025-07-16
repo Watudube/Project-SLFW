@@ -1,5 +1,7 @@
 from .base_schema import BaseOut, BaseIn
-from .entity_schema import EntityOut, EntityIn
+from typing import Any
+from pydantic import Field
+from app.utils.entity_union_schema import UnionEntityOut
 
 class TileOut(BaseOut):
     x_coord: int
@@ -8,7 +10,7 @@ class TileOut(BaseOut):
     is_wall: bool
     sprite: str
     speed: int
-    entities: list[EntityOut] = []
+    entities: list[UnionEntityOut] = Field(default_factory=list)
 
 class TileIn(BaseIn):
     x_coord: int
@@ -17,4 +19,4 @@ class TileIn(BaseIn):
     is_wall: bool
     sprite: str
     speed: int
-    entities: list[EntityIn] = []
+    entities: list[dict[str, Any]] = Field(default_factory=list)

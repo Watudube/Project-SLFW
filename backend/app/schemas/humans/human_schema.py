@@ -1,8 +1,8 @@
 from ..core.actor_schema import ActorOut, ActorIn, ActorUpdate
-from typing import Optional
+from typing import Literal, Optional
 
-# For returning human data in a response
 class HumanOut(ActorOut):
+    type: Literal["human"]
     name: Optional[str]
     hunger:   int
     strength: int
