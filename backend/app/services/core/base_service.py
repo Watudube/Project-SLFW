@@ -12,11 +12,17 @@ class BaseService(Generic[M, R]):
         self.db = db
 
     def create(self, instance: dict) -> M:
-        return self.repo.create(instance)
+        try:
+            return self.repo.create(instance)
+        except Exception as e:
+            raise ValueError(f"Schema failed to validate: {e}")
     
-    def delete(self, instance_id: int) -> None:
-        instance = self.get(instance_id)
-        self.repo.delete(instance)
+    def delete(self, instance: M) -> None:
+        try:
+            self.repo.delete(instance)
+        except Exception as e:
+            self.db.rollback()
+            raise ValueError(f"Failed to delete instance: {e}")
 
     def get(self, instance_id: int) -> M:
         instance = self.repo.get(instance_id)
