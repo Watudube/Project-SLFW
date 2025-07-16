@@ -33,3 +33,16 @@ class GameboardService(BaseService[Gameboard, GameboardRepository]):
             raise ValueError("There is no gameboard in database")
         except MultipleResultsFound:
             raise ValueError("There are multiple gameboards in database")
+        
+    def delete_gameboard(self) -> None:
+        """
+        Deletes gameboard
+        """
+        try:
+            gameboard = self.repo.get_gameboard()
+        except NoResultFound:
+            return
+        except MultipleResultsFound:
+            raise ValueError("There are multiple gameboards in database")
+        self.delete(gameboard)
+        
