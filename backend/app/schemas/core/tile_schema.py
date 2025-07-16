@@ -12,6 +12,14 @@ class TileOut(BaseOut):
     speed: int
     entities: list[UnionEntityOut] = Field(default_factory=list)
 
+class TileOutNoEntity(BaseOut):
+    x_coord: int
+    y_coord: int
+    type: str
+    is_wall: bool
+    sprite: str
+    speed: int
+
 class TileIn(BaseIn):
     x_coord: int
     y_coord: int
