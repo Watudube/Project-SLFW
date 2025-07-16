@@ -3,6 +3,10 @@ from sqlalchemy import Column, Integer, ForeignKey
 
 class Actor(Entity):
     __tablename__ = "actors"
+    __mapper_args__ = {
+    "polymorphic_identity": "actor",
+    }
+
 
     id = Column(Integer, ForeignKey("entities.id"), primary_key=True)
     health = Column(Integer, nullable=False, default=100)

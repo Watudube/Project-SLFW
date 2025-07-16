@@ -5,7 +5,7 @@ from sqlalchemy.orm import relationship
 class Entity(BaseModel):
     __tablename__ = "entities"
 
-    tile_id = Column(Integer, ForeignKey("tiles.id"), nullable=False)
+    tile_id = Column(Integer, ForeignKey("tiles.id", ondelete="CASCADE"), nullable=False)
     type = Column(String, nullable=False)
     label = Column(String, nullable=False)
     description = Column(String, nullable=False)
@@ -16,3 +16,9 @@ class Entity(BaseModel):
         back_populates="entities",
         lazy="joined"
     )
+
+    __mapper_args__ = {
+        "polymorphic_on": type,
+        "polymorphic_identity": "entity",
+        "with_polymorphic": "*"
+    }

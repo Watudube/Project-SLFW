@@ -28,5 +28,6 @@ class Tile(BaseModel):
     entities = relationship(
         "app.models.core.entity.Entity",
         back_populates="tile",
+        cascade="all, delete-orphan",
         lazy="selectin",
     )
