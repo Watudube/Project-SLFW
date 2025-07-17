@@ -8,4 +8,3 @@ class Aggressive(Animal):
     }
 
     id = Column(Integer, ForeignKey("animals.id"), primary_key=True)
-    strength = Column(Integer, nullable=False)
