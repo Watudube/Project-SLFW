@@ -32,3 +32,14 @@ class UserService(HumanService[M, R], Generic[M, R]):
         if (user and password == cast(User, user).password):
             return User
         return
+
+    def get_user_perception(self, user_id: int) -> Level:
+        user = self.get_user(user_id)
+        tile = TileService(self.db).get_empty_tile(user.tile_id)
+        user_perception = LevelService(self.db).get_subsection(
+            tile.level_id,
+            tile.x_coord,
+            tile.y_coord,
+            user.perception_range
+        )
+        return user_perception
