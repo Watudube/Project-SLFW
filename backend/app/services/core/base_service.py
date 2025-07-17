@@ -8,13 +8,19 @@ R = TypeVar("R", bound=BaseRepository)
 
 class BaseService(Generic[M, R]):
     def __init__(self, db: Session, model: Type[M], repo_class: Type[R]):
-        self.repo: R = repo_class(db, model)
         self.db = db
+        self.model = model
+        self.repo: R = repo_class(db, model)
 
     def create(self, instance: dict) -> M:
         try:
+            instance = self.model(**instance)
+        except TypeError as e:
+            raise ValueError(f"Data: {instance}\ndoes not match model: {self.model.__name__}\n{e}")
+        try:
             return self.repo.create(instance)
         except Exception as e:
+            self.db.rollback()
             raise ValueError(f"Schema failed to validate: {e}")
     
     def delete(self, instance: M) -> None:
