@@ -31,6 +31,3 @@ class ActorService(EntityService[M, R], Generic[M, R]):
             tile.y_coord,
             actor.perception_range
         )
-    
-    def get_health(self, actor_id: int) -> int:
-        return self.get(actor_id).health
