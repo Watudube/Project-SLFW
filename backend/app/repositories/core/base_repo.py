@@ -9,8 +9,7 @@ class BaseRepository(Generic[M]):
         self.db = db
         self.model = model
 
-    def create(self, instance: dict) -> M:
-        instance = self.model(**instance)
+    def create(self, instance: M) -> M:
         self.db.add(instance)
         self.db.commit()
         self.db.refresh(instance)

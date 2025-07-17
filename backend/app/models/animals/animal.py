@@ -8,4 +8,3 @@ class Animal(Actor):
     }
 
     id = Column(Integer, ForeignKey("actors.id"), primary_key=True)
-    hunger = Column(Integer, nullable=False)

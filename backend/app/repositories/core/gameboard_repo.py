@@ -1,5 +1,5 @@
 from .base_repo import BaseRepository
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, selectinload, noload
 from app.models.core.gameboard import Gameboard
 from app.models.core.level import Level
 from app.models.core.tile import Tile
@@ -25,6 +25,7 @@ class GameboardRepository(BaseRepository):
             .options(
                  selectinload(Gameboard.levels)
                 .selectinload(Level.tiles)
+                .options(noload(Tile.entities))
             )
             .one()
         )

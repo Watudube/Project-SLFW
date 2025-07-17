@@ -8,6 +8,3 @@ class Human(Actor):
     }
 
     id = Column(Integer, ForeignKey("actors.id"), primary_key=True)
-    name = Column(String)
-    hunger = Column(Integer, nullable=False)
-    strength = Column(Integer, nullable=False)

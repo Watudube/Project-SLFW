@@ -32,3 +32,31 @@ class LevelService(BaseService[Level, LevelRepository]):
         if not (length and width):
             raise ValueError(f"Level with ID: {level_id} does not exist")
         return (length, width)
+
+    def get_subsection(self, level_id: int, x: int, y: int, perception_range: int) -> Level:
+        """
+        Provides a subsection of tiles from a level centered on a given coordinate
+        Params
+            - level_id: id of the level where the subsection is taken
+            - x: x coordinate where subsection is centered
+            - y: y coordinate where subsection is centered
+            - perception_range: Distance from center to be included in subsection
+        returns
+            - list[Tile]: A list of tiles on the level within the perception range of center
+        Raises
+            - ValueError: coordinates are out of bounds of gameboard
+            - ValueError: No tiles matched the given conditions
+        """
+        length, width = self.get_dimensions(level_id)
+        if x >= length or x < 0 or y >= width or y < 0:
+            raise ValueError("x and/or y values are out of bounds")
+
+        x_start = max(0, x - perception_range)
+        x_end = min(length, x + perception_range + 1)
+        y_start = max(0, y - perception_range)
+        y_end = min(width, y + perception_range + 1)
+        
+        subsection = self.repo.get_subsection(level_id, x_start, x_end, y_start, y_end)
+        if not subsection:
+            raise ValueError("Failed to retrieve subsection")
+        return subsection

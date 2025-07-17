@@ -7,6 +7,7 @@ from .core.actor import Actor
 from .core.item import Item
 from .core.prop import Prop
 from .humans.human import Human
+from .humans.user import User
 from .animals.animal import Animal
 from .animals.aggressive import Aggressive
 from .animals.passive import Passive
