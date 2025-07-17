@@ -1,8 +1,7 @@
-from app.apis.routers import human
 from app.websockets import game_route
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.apis.routers import auth_token
+from app.apis import *
 
 app = FastAPI()
 
@@ -19,6 +18,5 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(human.router)
-app.include_router(auth_token.router)
+app.include_router(user.router)
 app.include_router(game_route.router)
