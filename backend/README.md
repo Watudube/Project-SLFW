@@ -113,7 +113,7 @@ redis-server --version
    \l
    ```
 
-3. Exit PostgreSQL shell (if necessary):
+4. Exit PostgreSQL shell (if necessary):
 
    ```sql
    exit
@@ -178,7 +178,7 @@ uvicorn app.main:app
 uvicorn app.main:app --reload
 
 # Custom host and port
-uvicorn app.main:app --host 0.0.0.0 --port 8080
+uvicorn app.main:app --host 0.0.0.0 --port 8000
 
 # With detailed logging
 uvicorn app.main:app --reload --log-level debug
