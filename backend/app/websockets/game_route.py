@@ -17,6 +17,34 @@ router = APIRouter(
 async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
     await manager.connect(ws)
     gameboard_service = GameboardService(db)
+    user_service = UserService(db)
+    periodic_task = None
+
+    async def send_perception_periodically():
+        while True:
+            try:
+                user_id = connections[ws][token]
+                user_perception = user_service.get_user_perception(user_id)
+                level_segment = LevelOut.model_validate(user_perception)
+
+                await manager.send(
+                    {
+                        "type": "perception_update",
+                        "data": {"perception" : level_segment.model_dump()},
+                        "status": "success",
+                    },
+                    ws,
+                )
+            except Exception as e:
+                await manager.send(
+                    {
+                        "type": "perception_update",
+                        "error": f"Failed to load level segment: {str(e)}",
+                        "status": "error",
+                    },
+                    ws,
+                )
+            await asyncio.sleep(1)
 
     try:
         while True:
@@ -49,6 +77,7 @@ async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
                             ws,
                         )
                         manager.assign_connection(ws, token)
+                        periodic_task = asyncio.create_task(send_perception_periodically())
                     except Exception as e:
                         await manager.send(
                             {
