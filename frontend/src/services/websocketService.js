@@ -46,7 +46,7 @@ class WebSocketService {
 
     // Event handler: Fires when server sends a message.
     this.socket.onmessage = (event) => {
-      console.log("WS message recieved,");
+      console.log("WS message received,");
       const data = JSON.parse(event.data); // Convert JSON string to JS object.
       console.log(`WS message data:`);
       console.log(data);

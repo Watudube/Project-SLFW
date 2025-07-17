@@ -1,8 +1,12 @@
 // Importing Dependencies:
 import Phaser from "phaser";
 
+// Importing Services:
+import SceneService from "../services/sceneService.js";
+
 // Importing Constants:
 import { SCENE_KEYS } from "./sceneKeys";
+import { sprites } from "../services/spriteDirectory.js";
 
 /**
  * This scene represents the main game overworld where the player interacts with the game.
@@ -12,6 +16,8 @@ class OverworldScene extends Phaser.Scene {
    * Initializes the scene with a unique key.
    */
   constructor() {
+    console.log(`${SCENE_KEYS.OVERWORLD_SCENE} instance initializing...`);
+
     super({
       key: SCENE_KEYS.OVERWORLD_SCENE,
     }); // Unique key for the scene, used to identify it in the game.
@@ -21,30 +27,38 @@ class OverworldScene extends Phaser.Scene {
     this.cursors = null; // Placeholder for cursor keys.
     this.websocketService = null; // WebSocket service reference.
 
-    // TODO: Decide if these properties are needed:
-    this.entities = new Map(); // Store game entities.
-    this.worldData = null; // Store world state.
+    // Game world data:
+    this.gameboardData = null;
+    this.tileSize = 16; // Size of each tile in pixels.
+    this.tiles = new Map(); // Store tile sprites by tile ID.
+    this.entities = new Map(); // Store entity sprites by entity ID.
+    this.tileGrid = new Map(); // Store tiles by coordinate "x,y".
 
-    console.log(`${SCENE_KEYS.OVERWORLD_SCENE} instance initializing...`);
+    // Player data:
+    this.playerEntity = null;
+    this.playerTileId = null;
+
+    // Layers for organized rendering:
+    this.tileLayer = null; // Tiles render regardless of player's perception radius.
+    this.entityLayer = null; // Entities render based on player's perception radius.
+
+    // Input throttling properties:
+    this.lastInputTime = 0;
+    this.inputThrottle = 200;
   }
 
+  // ------------ Overwriting Phaser Scene Methods ------------ //
+
+  /**
+   * Initializes the scene, setting up keyboard controls and other keybinds.
+   * This method is called once when the scene is created.
+   */
   init() {
+    console.log("Registering keybinds...");
+
     // Initialize keyboard controls:
     this.cursors = this.input.keyboard.createCursorKeys();
     this.wasdKeys = this.input.keyboard.addKeys("W,S,A,D");
-
-    // Input throttling properties:
-    this.lastInputTime = 0; // milliseconds
-    this.inputThrottle = 200; // milliseconds
-  }
-
-  /**
-   * Sets the WebSocket service reference for this scene.
-   * @param {WebSocketService} websocketService - The WebSocket service instance.
-   */
-  setWebSocketService(websocketService) {
-    this.websocketService = websocketService;
-    console.log("WebSocket service connected to OverworldScene");
   }
 
   /**
@@ -53,15 +67,11 @@ class OverworldScene extends Phaser.Scene {
    */
   preload() {
     console.log(`${SCENE_KEYS.OVERWORLD_SCENE} assets preloading...`);
-    // Setting the base URL for loading assets.
-    this.load.setBaseURL("https://labs.phaser.io"); // Getting assets from Phaser's website.
 
-    // Assets from Phaser's website:
-    this.load.image("sky", "assets/skies/space3.png"); // (key, path)
-    this.load.image("logo", "assets/sprites/phaser3-logo.png"); // (key, path)
-    this.load.image("red", "assets/particles/red.png"); // (key, path)
-
-    console.log(`${SCENE_KEYS.OVERWORLD_SCENE} assets preloaded!`);
+    // Load all sprites from the sprite directory:
+    Object.entries(sprites).forEach(([key, path]) => {
+      this.load.image(key, path);
+    });
   }
 
   /**
@@ -71,34 +81,71 @@ class OverworldScene extends Phaser.Scene {
   create() {
     console.log(`${SCENE_KEYS.OVERWORLD_SCENE} creating scene...`);
 
-    // Adding a background image to the scene.
-    this.add.image(400, 300, "sky"); // (x position, y position, key)
+    // Create layers for organized rendering:
+    this.tileLayer = this.add.group();
+    this.entityLayer = this.add.group();
 
-    const logo = this.physics.add.image(400, 100, "logo");
-
-    logo.setVelocity(100, 200);
-    logo.setBounce(1, 1);
-    logo.setCollideWorldBounds(true);
-
-    // WIP: Store the logo as our player for now
-    this.player = logo;
-
-    console.log(`${SCENE_KEYS.OVERWORLD_SCENE} scene created!`);
+    // Set up camera:
+    this.cameras.main.setBackgroundColor(0x2c3e50);
   }
 
+  /**
+   * Phaser built in update method.
+   * This main update loop that runs every frame.
+   */
   update() {
     this.handleInput();
+
+    // TODO: Add more update logic as needed.
+  }
+
+  destroy() {
+    // Clean up WebSocket reference.
+    this.websocketService = null;
+
+    // Clear all collections.
+    this.tiles.clear();
+    this.entities.clear();
+    this.tileGrid.clear();
+
+    // Call parent destroy.
+    super.destroy();
+  }
+
+  // ---------------------------------------------- //
+  // ------ Overworld Scene Specific Methods ------ //
+
+  /**
+   * Sets the WebSocket service reference for this scene.
+   * @param {WebSocketService} websocketService - The WebSocket service instance.
+   */
+  setWebSocketService(websocketService) {
+    this.websocketService = websocketService;
+  }
+
+  /**
+   * Handle initial gameboard data from server.
+   * @param {object} gameboardData - Complete gameboard data.
+   */
+  handleInitialGameboardData(gameboardData) {
+    console.log("Handling initial gameboard data:");
+    console.log(gameboardData);
+
+    this.gameboardData = gameboardData;
+
+    SceneService.clearWorld(this);
+    SceneService.renderGameboard(this);
+    SceneService.setupCamera(this);
   }
 
   /**
    * Handle player input and send actions to server.
    */
   handleInput() {
-    // // If WebSocket service is not connected, do nothing, ensuring that we only
-    // // send actions when the connection is active.
-    // if (!this.websocketService || !this.websocketService.isConnected) {
-    //   return;
-    // }
+    // If WebSocket service is not connected, do nothing
+    if (!this.websocketService || !this.websocketService.isConnected) {
+      return;
+    }
 
     // Throttle input to prevent spamming actions.
     const currentTime = this.time.now;
@@ -106,6 +153,9 @@ class OverworldScene extends Phaser.Scene {
 
     let action = null;
     let data = {};
+
+    // TODO: For future input handling where player position is needed:
+    const playerCoords = SceneService.getPlayerTileCoords(this);
 
     // Check for movement input:
     // WIP: Change the data object as needed.
@@ -123,27 +173,21 @@ class OverworldScene extends Phaser.Scene {
       data = { direction: "south" };
     }
 
-    // Send action to server if we have one.
     if (action) {
-      console.log(`Player Input: ${action}; Data:`);
-      console.log(data);
-
       this.websocketService.sendPlayerAction(action, data);
-      this.lastInputTime = currentTime; // Update last input time to throttle further actions.
+      this.lastInputTime = currentTime;
     }
   }
-
-  // -------------------------------------
 
   /**
    * Handle world updates from the server
    * @param {object} data - World update data
    */
   handleWorldUpdate(data) {
-    console.log("Handling world update in scene:", data);
-    this.worldData = data;
-    // Update world state based on server data
-    // This could include terrain changes, weather, time of day, etc.
+    console.log("Handling world update in scene:");
+    console.log(data);
+
+    // WIP: Update gameboard data and re-render as needed.
   }
 
   /**
@@ -151,24 +195,10 @@ class OverworldScene extends Phaser.Scene {
    * @param {object} data - Entity update data
    */
   handleEntityUpdate(data) {
-    console.log("Handling entity update in scene:", data);
+    console.log("Handling entity update in scene:");
+    console.log(data);
 
-    // Update or create entities based on server data
-    if (data.entities) {
-      data.entities.forEach((entityData) => {
-        const entityId = entityData.id;
-
-        if (this.entities.has(entityId)) {
-          // Update existing entity
-          const entity = this.entities.get(entityId);
-          entity.setPosition(entityData.x, entityData.y);
-        } else {
-          // Create new entity (placeholder - you'd create appropriate sprites)
-          const entity = this.add.circle(entityData.x, entityData.y, 10, 0x00ff00);
-          this.entities.set(entityId, entity);
-        }
-      });
-    }
+    // WIP: Update entities based on server data.
   }
 
   /**
@@ -176,17 +206,10 @@ class OverworldScene extends Phaser.Scene {
    * @param {object} data - Player update data
    */
   handlePlayerUpdate(data) {
-    console.log("Handling player update in scene:", data);
+    console.log("Handling player update in scene:");
+    console.log(data);
 
-    // Update player position and state based on server data
-    if (this.player && data.position) {
-      this.player.setPosition(data.position.x, data.position.y);
-    }
-
-    // Update player stats, inventory, etc.
-    if (data.stats) {
-      // Handle player stats updates
-    }
+    // WIP: Update player entity based on server data.
   }
 }
 
