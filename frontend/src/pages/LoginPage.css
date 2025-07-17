@@ -1,0 +1,96 @@
+.login-page-container {
+  border: red 1px solid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.login-headers {
+  border: blue 1px solid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  align-items: left;
+  justify-content: center;
+  padding-top: 20px;
+}
+
+.login-form label {
+  width: 100%;
+}
+
+.login-form input {
+  margin-bottom: 10px;
+  max-width: 200px;
+}
+
+.login-form button {
+  margin-top: 10px;
+  padding: 5px;
+  max-width: 100px;
+}
+
+.login-form p {
+  margin-top: 10px;
+}
+
+/* Error Messages */
+.error-message {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+.general-error {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+/* Input and button styling improvements */
+.login-form input:disabled {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.login-form button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.login-form a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.login-form a:hover {
+  text-decoration: underline;
+}
+
+/* Guest login button styling */
+.guest-login-button {
+  background-color: #28a745 !important;
+  color: white;
+  margin-top: 5px !important;
+}
+
+.guest-login-button:hover:not(:disabled) {
+  background-color: #218838 !important;
+}

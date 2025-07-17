@@ -1,4 +1,4 @@
-.home-page-container {
+.game-page-container {
   border: red 1px solid;
   display: flex;
   flex-direction: column;
@@ -26,6 +26,22 @@
 
 .insrtuctions-container {
   padding: 20px;
+}
+
+.logout-button {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+  transition: background-color 0.2s ease;
+}
+
+.logout-button:hover {
+  background-color: #c82333;
 }
 
 /* TODO: Rework or remove for future versions: */

@@ -1,5 +1,6 @@
 // Importing Dependencies:
 import { useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 
 // Importing Components:
 import PhaserComponent from "../components/PhaserComponent";
@@ -11,23 +12,33 @@ import { UserContext } from "../contexts/UserContext";
 import { websocketService } from "../services/websocketService";
 
 // Importing Styles:
-import "./HomePage.css";
+import "./GamePage.css";
 
 /**
- * Represents the Home Page of the application, which serves as the main entry point for users.
+ * Represents the Game Page of the application, which serves as the main entry point for users.
  * @returns Home Page Component
  */
-export default function HomePage() {
+export default function GamePage() {
   // Subscribing to User Context (changes to context states should trigger re-render):
-  const { userToken, isLoading, setIsLoading, guestLogin, logout } = useContext(UserContext);
-  console.log("HomePage mounting...");
+  const { userToken, isLoading, logout } = useContext(UserContext);
+  const navigate = useNavigate();
+
+  console.log("GamePage mounting...");
+
+  /**
+   * Handle logout
+   */
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   // WebSocket connection management:
   useEffect(() => {
     // Only connect if we have a user token and are not loading, connecting to the WebSocket server.
     // This ensures we don't attempt to connect before the user token is available.
     if (userToken && !isLoading) {
-      websocketService.connect(undefined, userToken); // First argument is the URL, which defaults to the base URL in the service.
+      websocketService.connect(undefined, userToken); // First argument is the URL, which defaults to the base URL in the service if undefined.
 
       // Disconnect from WebSocket server when component unmounts or userToken changes.
       return () => {
@@ -41,12 +52,15 @@ export default function HomePage() {
   }
 
   return (
-    <div className="home-page-container">
+    <div className="game-page-container">
       <div className="game-title-container">
         <h1>Project-SLFW</h1>
         <p>
           <i>Name Pending</i>
         </p>
+        <button onClick={handleLogout} className="logout-button">
+          Logout
+        </button>
       </div>
       <div className="gui-container">
         <PhaserComponent websocketService={websocketService} userToken={userToken} />

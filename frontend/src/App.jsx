@@ -1,12 +1,13 @@
 // Importing Dependencies:
-import React from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 // Importing Page Components:
-import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
+import GamePage from "./pages/GamePage";
 
 // Importing Components:
 import PageTemplate from "./components/PageTemplate";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Importing Contexts:
 import { UserProvider } from "./contexts/UserContext";
@@ -20,7 +21,15 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route element={<PageTemplate />}>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<LoginPage />} />
+            <Route
+              path="/game"
+              element={
+                <ProtectedRoute>
+                  <GamePage />
+                </ProtectedRoute>
+              }
+            />
           </Route>
         </Routes>
       </BrowserRouter>

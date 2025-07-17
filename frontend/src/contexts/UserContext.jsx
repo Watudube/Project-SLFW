@@ -18,33 +18,54 @@ function UserProvider({ children }) {
   const [isLoading, setIsLoading] = useState(true);
 
   /**
-   * Guest-login when component mounts (for first iteration).
-   * This simulates getting a user token without actual authentication.
-   * TODO: Replace with real authentication flow later.
+   * Login with username and password.
    */
-  const guestLogin = useCallback(async () => {
+  const login = useCallback(async (credentials) => {
     try {
       setIsLoading(true);
-      console.log("Attempting guest-login...");
+      console.log("Attempting login...");
 
-      // Call backend to get a temporary user token.
-      const response = await apiService.getGuestToken();
+      const response = await apiService.login(credentials);
 
       setUserToken(response.token);
 
-      // Store token in sessionStorage for temporary persistence.
+      // Store token in sessionStorage for persistence
       sessionStorage.setItem("userToken", response.token);
-      console.log("Guest-login successful:", response);
-    } catch (error) {
-      console.error("Guest-login failed:", error);
-    } finally {
-      setIsLoading(false); // This MUST or else some components will not render.
-    }
-  }, []); // Empty dependency array since this function doesn't depend on any props or state
+      console.log("Login successful:", response);
 
-  //
-  // Login Function Goes Here When Implemented.
-  //
+      return response;
+    } catch (error) {
+      console.error("Login failed:", error);
+      throw error; // Re-throw so components can handle the error
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  /**
+   * Create a new user account.
+   */
+  const createAccount = useCallback(async (credentials) => {
+    try {
+      setIsLoading(true);
+      console.log("Attempting account creation...");
+
+      const response = await apiService.createAccount(credentials);
+
+      setUserToken(response.token);
+
+      // Store token in sessionStorage for persistence
+      sessionStorage.setItem("userToken", response.token);
+      console.log("Account creation successful:", response);
+
+      return response;
+    } catch (error) {
+      console.error("Account creation failed:", error);
+      throw error; // Re-throw so components can handle the error
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   /**
    * Logout function to clear user data and token.
@@ -57,7 +78,7 @@ function UserProvider({ children }) {
   }, [userToken]);
 
   /**
-   * Check for existing token on app start and auto-login if none exists.
+   * Check for existing token on app start.
    */
   useEffect(() => {
     const savedToken = sessionStorage.getItem("userToken");
@@ -65,10 +86,10 @@ function UserProvider({ children }) {
       setUserToken(savedToken);
       setIsLoading(false);
     } else {
-      // No saved token, automatically attempt guest login
-      guestLogin();
+      // No saved token, stay on login page
+      setIsLoading(false);
     }
-  }, [guestLogin]);
+  }, []);
 
   return (
     <UserContext.Provider
@@ -76,7 +97,8 @@ function UserProvider({ children }) {
         userToken,
         isLoading,
         setIsLoading,
-        guestLogin,
+        login,
+        createAccount,
         logout,
       }}
     >
