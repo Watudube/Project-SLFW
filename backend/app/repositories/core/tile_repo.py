@@ -21,3 +21,11 @@ class TileRepository(BaseRepository):
             .filter(Tile.id == tile_id)
             .first()
         )
+    
+    def get_empty_tile_with_coords(self, x_coord: int, y_coord: int) -> Tile | None:
+        return (
+            self.db.query(Tile)
+            .options(noload(Tile.entities))
+            .filter(Tile.x_coord == x_coord, Tile.y_coord == y_coord)
+            .first()
+        )
