@@ -1,8 +1,8 @@
-"""test concrete implementation
+"""Initial clean schema
 
-Revision ID: cbda28be7411
-Revises: 4763debb230f
-Create Date: 2025-07-11 12:19:39.577874
+Revision ID: c5135bd8b082
+Revises: 
+Create Date: 2025-07-18 11:03:05.857132
 
 """
 from typing import Sequence, Union
@@ -12,8 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'cbda28be7411'
-down_revision: Union[str, Sequence[str], None] = '4763debb230f'
+revision: str = 'c5135bd8b082'
+down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -26,13 +26,22 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('users',
+    sa.Column('username', sa.String(), nullable=False),
+    sa.Column('password', sa.String(), nullable=False),
+    sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
+    sa.PrimaryKeyConstraint('username', 'id'),
+    sa.UniqueConstraint('username')
+    )
     op.create_table('levels',
     sa.Column('gameboard_id', sa.Integer(), nullable=False),
+    sa.Column('z_index', sa.Integer(), nullable=False),
     sa.Column('length', sa.Integer(), nullable=False),
     sa.Column('width', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.ForeignKeyConstraint(['gameboard_id'], ['gameboard.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('z_index', name='unique_level_heights')
     )
     op.create_table('tiles',
     sa.Column('level_id', sa.Integer(), nullable=False),
@@ -52,19 +61,21 @@ def upgrade() -> None:
     op.create_index('tile_order', 'tiles', ['level_id', 'y_coord', 'x_coord'], unique=False)
     op.create_table('entities',
     sa.Column('tile_id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(), nullable=False),
+    sa.Column('type', sa.String(), nullable=False),
     sa.Column('label', sa.String(), nullable=False),
     sa.Column('description', sa.String(), nullable=False),
     sa.Column('sprite', sa.String(), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-    sa.ForeignKeyConstraint(['tile_id'], ['tiles.id'], ),
+    sa.ForeignKeyConstraint(['tile_id'], ['tiles.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('actors',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('health', sa.Integer(), nullable=False),
-    sa.Column('speed', sa.Integer(), nullable=False),
     sa.Column('perception_range', sa.Integer(), nullable=False),
+    sa.Column('hunger', sa.Integer(), nullable=False),
+    sa.Column('strength', sa.Integer(), nullable=False),
+    sa.Column('speed', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['id'], ['entities.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -80,11 +91,10 @@ def upgrade() -> None:
     )
     op.create_table('animals',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('hunger', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['id'], ['actors.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('consumable',
+    op.create_table('consumables',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('health_gain', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['id'], ['items.id'], ),
@@ -96,13 +106,17 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['id'], ['props.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('humans',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.ForeignKeyConstraint(['id'], ['actors.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('aggressive_animals',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('strength', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['id'], ['animals.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('grass_field',
+    op.create_table('grass_fields',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['id'], ['fields.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -112,37 +126,27 @@ def upgrade() -> None:
     sa.ForeignKeyConstraint(['id'], ['animals.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_foreign_key(None, 'humans', 'actors', ['id'], ['id'])
-    op.drop_column('humans', 'health')
-    op.drop_column('humans', 'x_coord')
-    op.drop_column('humans', 'speed')
-    op.drop_column('humans', 'perception_range')
-    op.drop_column('humans', 'thirst')
-    op.drop_column('humans', 'name')
-    op.drop_column('humans', 'y_coord')
-    op.drop_column('humans', 'description')
-    op.drop_column('humans', 'label')
+    op.create_table('players',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('username', sa.String(), nullable=False),
+    sa.CheckConstraint('id > 0', name='check_id_positive'),
+    sa.ForeignKeyConstraint(['id'], ['humans.id'], ),
+    sa.ForeignKeyConstraint(['username'], ['users.username'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     # ### end Alembic commands ###
 
 
 def downgrade() -> None:
     """Downgrade schema."""
     # ### commands auto generated by Alembic - please adjust! ###
-    op.add_column('humans', sa.Column('label', sa.VARCHAR(), autoincrement=False, nullable=False))
-    op.add_column('humans', sa.Column('description', sa.VARCHAR(), autoincrement=False, nullable=False))
-    op.add_column('humans', sa.Column('y_coord', sa.INTEGER(), autoincrement=False, nullable=False))
-    op.add_column('humans', sa.Column('name', sa.VARCHAR(), autoincrement=False, nullable=False))
-    op.add_column('humans', sa.Column('thirst', sa.INTEGER(), autoincrement=False, nullable=False))
-    op.add_column('humans', sa.Column('perception_range', sa.INTEGER(), autoincrement=False, nullable=False))
-    op.add_column('humans', sa.Column('speed', sa.INTEGER(), autoincrement=False, nullable=False))
-    op.add_column('humans', sa.Column('x_coord', sa.INTEGER(), autoincrement=False, nullable=False))
-    op.add_column('humans', sa.Column('health', sa.INTEGER(), autoincrement=False, nullable=False))
-    op.drop_constraint(None, 'humans', type_='foreignkey')
+    op.drop_table('players')
     op.drop_table('passive_animals')
-    op.drop_table('grass_field')
+    op.drop_table('grass_fields')
     op.drop_table('aggressive_animals')
+    op.drop_table('humans')
     op.drop_table('fields')
-    op.drop_table('consumable')
+    op.drop_table('consumables')
     op.drop_table('animals')
     op.drop_table('props')
     op.drop_table('items')
@@ -151,5 +155,6 @@ def downgrade() -> None:
     op.drop_index('tile_order', table_name='tiles')
     op.drop_table('tiles')
     op.drop_table('levels')
+    op.drop_table('users')
     op.drop_table('gameboard')
     # ### end Alembic commands ###
