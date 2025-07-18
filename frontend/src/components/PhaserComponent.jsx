@@ -12,129 +12,20 @@ import { SCENE_KEYS } from "../phaser/sceneKeys.js";
 import "./PhaserComponent.css";
 
 export default function PhaserComponent({ websocketService, userToken }) {
-  // Using refs to manage the Phaser game instance and container accross re-renders.
-  const containerRef = useRef(null);
-  const gameRef = useRef(null);
+  const containerRef = useRef(null); // Ref for the container where Phaser will render.
+  const gameRef = useRef(null); // Ref for the Phaser game instance.
+  const listenersSetupRef = useRef(false); // Tracking if listeners are already set up (helps avoid race conditions).
 
-  // Set up WebSocket event listeners for game updates:
+  // IMPORTANT: Only using one useEffect to handle both game creation and WebSocket setup, to avoid race conditions.
   useEffect(() => {
-    if (!websocketService || !userToken) return; // If no websocket service or user token, do not set up listeners.
+    if (!containerRef.current || !websocketService || !userToken) {
+      return; // Don't proceed if essential dependencies are missing!
+    }
 
-    /**
-     * Handles successful game join and initial data loading
-     * @param {*} data - The data received from the server when joining game
-     */
-    const gameJoinedListener = (data) => {
-      console.log("Game joined successfully, received data:");
-      console.log(data);
-      if (gameRef.current) {
-        const scene = gameRef.current.scene.getScene(SCENE_KEYS.OVERWORLD_SCENE);
-        if (scene && scene.handleInitialGameboardData) {
-          scene.handleInitialGameboardData(data.initial_gameboard);
-        }
-      }
-    };
+    // If game doesn't exist, create it first.
+    if (!gameRef.current) {
+      console.log("Creating Phaser game instance...");
 
-    /**
-     * Handles game join errors
-     * @param {*} error - Error message from server
-     */
-    const gameJoinErrorListener = (error) => {
-      console.error("Failed to join game:", error);
-      // You could show an error message to the user here
-    };
-
-    /**
-     * Passes world update data to the Phaser scene to handle.
-     * This function is called when the WebSocket service receives a "worldUpdate" event.
-     * @param {*} data - The data received from the server containing world updates.
-     */
-    const worldUpdateListener = (data) => {
-      console.log("World update received:", data);
-      if (gameRef.current) {
-        const scene = gameRef.current.scene.getScene(SCENE_KEYS.OVERWORLD_SCENE);
-        if (scene && scene.handleWorldUpdate) {
-          scene.handleWorldUpdate(data);
-        }
-      }
-    };
-
-    /**
-     * Passes entity update data to the Phaser scene to handle.
-     * This function is called when the WebSocket service receives an "entityUpdate" event.
-     * @param {*} data - The data received from the server containing entity updates.
-     */
-    const entityUpdateListener = (data) => {
-      console.log("Entity update received:");
-      console.log(data);
-      if (gameRef.current) {
-        const scene = gameRef.current.scene.getScene(SCENE_KEYS.OVERWORLD_SCENE);
-        if (scene && scene.handleEntityUpdate) {
-          scene.handleEntityUpdate(data);
-        }
-      }
-    };
-
-    /**
-     * Passes player update data to the Phaser scene to handle.
-     * This function is called when the WebSocket service receives a "playerUpdate" event.
-     * @param {*} data - The data received from the server containing player updates.
-     */
-    const playerUpdateListener = (data) => {
-      console.log("Player update received:", data);
-      if (gameRef.current) {
-        const scene = gameRef.current.scene.getScene(SCENE_KEYS.OVERWORLD_SCENE);
-        if (scene && scene.handlePlayerUpdate) {
-          scene.handlePlayerUpdate(data);
-        }
-      }
-    };
-
-    /**
-     * Handles server errors
-     * @param {*} error - Error message from server
-     */
-    const serverErrorListener = (error) => {
-      console.error("Server error received:", error);
-      // You could show an error notification to the user here
-    };
-
-    /**
-     * Handles player disconnection events
-     * @param {*} data - Disconnection data
-     */
-    const playerDisconnectedListener = (data) => {
-      console.log("Player disconnected:", data);
-      // Handle other players disconnecting
-    };
-
-    // Register event listeners for WebSocket events
-    websocketService.on("gameJoined", gameJoinedListener);
-    websocketService.on("gameJoinError", gameJoinErrorListener);
-    websocketService.on("worldUpdate", worldUpdateListener);
-    websocketService.on("entityUpdate", entityUpdateListener);
-    websocketService.on("playerUpdate", playerUpdateListener);
-    websocketService.on("serverError", serverErrorListener);
-    websocketService.on("playerDisconnected", playerDisconnectedListener);
-
-    // Cleanup listeners when component unmounts or dependencies change
-    return () => {
-      websocketService.off("gameJoined", gameJoinedListener);
-      websocketService.off("gameJoinError", gameJoinErrorListener);
-      websocketService.off("worldUpdate", worldUpdateListener);
-      websocketService.off("entityUpdate", entityUpdateListener);
-      websocketService.off("playerUpdate", playerUpdateListener);
-      websocketService.off("serverError", serverErrorListener);
-      websocketService.off("playerDisconnected", playerDisconnectedListener);
-    };
-  }, [websocketService, userToken]);
-
-  useEffect(() => {
-    /**
-     * Configures and creates a new Phaser game instance and attaches it
-     * to the container.
-     */
-    function createGame() {
       // Getting the width and height of the container to set the game size.
       const width = containerRef.current.offsetWidth;
       const height = containerRef.current.offsetHeight;
@@ -154,7 +45,7 @@ export default function PhaserComponent({ websocketService, userToken }) {
           },
         },
         render: {
-          pixelArt: true, // Good for pixel art sprites
+          pixelArt: true, // Good for pixel art sprites.
           antialias: false,
         },
         scale: {
@@ -165,35 +56,167 @@ export default function PhaserComponent({ websocketService, userToken }) {
 
       // Create the Phaser game instance.
       gameRef.current = new Phaser.Game(PhaserConfig);
+    }
 
-      // Wait for scene to be ready before passing WebSocket service
-      if (websocketService && gameRef.current) {
-        gameRef.current.events.once("ready", () => {
+    // Setting up websocket listeners.
+    if (!listenersSetupRef.current) {
+      console.log("Setting up WebSocket listeners...");
+
+      /**
+       * Handles successful game join and initial data loading
+       * @param {*} data - The data received from the server when joining game
+       */
+      const gameJoinedListener = (data) => {
+        console.log("Phaser Component: gameJoinedListener received data:");
+        console.log(data);
+        if (gameRef.current) {
           const scene = gameRef.current.scene.getScene(SCENE_KEYS.OVERWORLD_SCENE);
-          if (scene) {
-            scene.setWebSocketService(websocketService);
-            console.log("✅ WebSocket service passed to scene!");
-          } else {
-            console.error("❌ Scene not found when setting WebSocket service!");
+          if (scene && scene.handleInitialGameboardData) {
+            scene.handleInitialGameboardData(data.initial_gameboard);
           }
-        });
+        }
+      };
 
-        // Also try to set it immediately in case the scene is already ready
-        setTimeout(() => {
-          const scene = gameRef.current?.scene?.getScene(SCENE_KEYS.OVERWORLD_SCENE);
-          if (scene && !scene.websocketService) {
-            scene.setWebSocketService(websocketService);
-            console.log("✅ WebSocket service passed to scene (delayed)!");
+      /**
+       * Handles game join errors
+       * @param {*} error - Error message from server
+       */
+      const gameJoinErrorListener = (error) => {
+        console.error("Failed to join game:", error);
+        // You could show an error message to the user here
+      };
+
+      /**
+       * Passes world update data to the Phaser scene to handle.
+       * This function is called when the WebSocket service receives a "worldUpdate" event.
+       * @param {*} data - The data received from the server containing world updates.
+       */
+      const worldUpdateListener = (data) => {
+        console.log("World update received:", data);
+        if (gameRef.current) {
+          const scene = gameRef.current.scene.getScene(SCENE_KEYS.OVERWORLD_SCENE);
+          if (scene && scene.handleWorldUpdate) {
+            scene.handleWorldUpdate(data);
           }
-        }, 100);
+        }
+      };
+
+      /**
+       * Passes entity update data to the Phaser scene to handle.
+       * This function is called when the WebSocket service receives an "entityUpdate" event.
+       * @param {*} data - The data received from the server containing entity updates.
+       */
+      const entityUpdateListener = (data) => {
+        console.log("Entity update received:");
+        console.log(data);
+        if (gameRef.current) {
+          const scene = gameRef.current.scene.getScene(SCENE_KEYS.OVERWORLD_SCENE);
+          if (scene && scene.handleEntityUpdate) {
+            scene.handleEntityUpdate(data);
+          }
+        }
+      };
+
+      /**
+       * Passes player update data to the Phaser scene to handle.
+       * This function is called when the WebSocket service receives a "playerUpdate" event.
+       * @param {*} data - The data received from the server containing player updates.
+       */
+      const playerUpdateListener = (data) => {
+        console.log("Player update received:", data);
+        if (gameRef.current) {
+          const scene = gameRef.current.scene.getScene(SCENE_KEYS.OVERWORLD_SCENE);
+          if (scene && scene.handlePlayerUpdate) {
+            scene.handlePlayerUpdate(data);
+          }
+        }
+      };
+
+      /**
+       * Handles server errors
+       * @param {*} error - Error message from server
+       */
+      const serverErrorListener = (error) => {
+        console.error("Server error received:", error);
+        // You could show an error notification to the user here
+      };
+
+      /**
+       * Handles player disconnection events
+       * @param {*} data - Disconnection data
+       */
+      const playerDisconnectedListener = (data) => {
+        console.log("Player disconnected:", data);
+        // Handle other players disconnecting
+      };
+
+      // Register event listeners for WebSocket events
+      websocketService.on("gameJoined", gameJoinedListener);
+      websocketService.on("gameJoinError", gameJoinErrorListener);
+      websocketService.on("worldUpdate", worldUpdateListener);
+      websocketService.on("entityUpdate", entityUpdateListener);
+      websocketService.on("playerUpdate", playerUpdateListener);
+      websocketService.on("serverError", serverErrorListener);
+      websocketService.on("playerDisconnected", playerDisconnectedListener);
+
+      // Store cleanup function for later use
+      gameRef.current.wsCleanup = () => {
+        websocketService.off("gameJoined", gameJoinedListener);
+        websocketService.off("gameJoinError", gameJoinErrorListener);
+        websocketService.off("worldUpdate", worldUpdateListener);
+        websocketService.off("entityUpdate", entityUpdateListener);
+        websocketService.off("playerUpdate", playerUpdateListener);
+        websocketService.off("serverError", serverErrorListener);
+        websocketService.off("playerDisconnected", playerDisconnectedListener);
+      };
+
+      listenersSetupRef.current = true;
+    }
+
+    // Pass WebSocket service to the scene.
+    const setupWebSocketInScene = () => {
+      if (gameRef.current && websocketService) {
+        const scene = gameRef.current.scene.getScene(SCENE_KEYS.OVERWORLD_SCENE);
+        if (scene && typeof scene.setWebSocketService === "function") {
+          scene.setWebSocketService(websocketService);
+          console.log("✅ WebSocket service passed to scene!");
+          return true;
+        }
       }
+      return false;
+    };
+
+    // Try to set up WebSocket in scene immediately
+    if (!setupWebSocketInScene()) {
+      // If immediate setup fails, wait for scene to be ready
+      const checkScene = () => {
+        if (setupWebSocketInScene()) {
+          clearInterval(intervalId);
+        }
+      };
+      const intervalId = setInterval(checkScene, 50); // Check every 50ms
+
+      // Clear interval after 5 seconds to prevent infinite checking
+      setTimeout(() => clearInterval(intervalId), 5000);
     }
 
-    // Create the Phaser game instance when the component mounts.
-    if (containerRef.current && !gameRef.current) {
-      createGame();
-    }
+    // Cleanup function
+    return () => {
+      console.log("Cleaning up PhaserComponent...");
 
+      // Clean up WebSocket listeners
+      if (gameRef.current && gameRef.current.wsCleanup) {
+        gameRef.current.wsCleanup();
+        delete gameRef.current.wsCleanup;
+      }
+
+      // Reset listeners setup flag
+      listenersSetupRef.current = false;
+    };
+  }, [websocketService, userToken]); // Dependencies that should trigger recreation
+
+  // Separate useEffect for window resize handling and cleanup
+  useEffect(() => {
     /**
      * Handles window resize events to adjust the Phaser game scale.
      */
@@ -210,12 +233,14 @@ export default function PhaserComponent({ websocketService, userToken }) {
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      // Destroy game only when component unmounts completely
       if (gameRef.current) {
+        console.log("Destroying Phaser game instance...");
         gameRef.current.destroy(true);
         gameRef.current = null;
       }
     };
-  }, [websocketService]);
+  }, []); // Empty dependency array - only run on mount/unmount
 
   return (
     <div
