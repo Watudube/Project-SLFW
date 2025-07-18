@@ -30,23 +30,23 @@ class WebSocketService {
 
     // Event handler: Fires when connection is successfully established.
     this.socket.onopen = () => {
-      console.log("Connecting to WebSocket server...");
+      console.log("WebSocketService: Connecting to WebSocket server...");
 
       // Join game session with the user token. On successful connection,
       // the server should send back a confirmation message and game data.
-      console.log(`Joining game with user token: ${this.userToken}.`);
+      console.log(`WebSocketService: Joining game with user token: ${this.userToken}.`);
       this.socket.send(JSON.stringify({ type: "join_game", userToken: this.userToken }));
 
       this.isConnected = true;
 
-      console.log("WebSocket connection established!");
+      console.log("WebSocketService: WebSocket connection established!");
     };
 
     // Event handler: Fires when server sends a message.
     this.socket.onmessage = (event) => {
-      console.log("WS message received,");
+      console.log("WebSocketService: WS message received,");
       const data = JSON.parse(event.data); // Convert JSON string to JS object.
-      console.log(`WS message data:`);
+      console.log(`WebSocketService: WS message data:`);
       console.log(data);
 
       this.routeMessage(data); // Route message to appropriate handler based on message type.
@@ -54,7 +54,7 @@ class WebSocketService {
 
     // Event handler: Fires when connection is lost!
     this.socket.onclose = (event) => {
-      console.log("WebSocket connection closed!", event.code, event.reason);
+      console.log("WebSocketService: WebSocket connection closed!", event.code, event.reason);
       this.isConnected = false;
       this.userToken = null; // Clear user token on disconnect.
 
@@ -104,7 +104,7 @@ class WebSocketService {
    * @param {object} message - Parsed JSON message from server.
    */
   routeMessage(message) {
-    console.log("Routing incoming WS message to handlers...");
+    console.log("WebSocketService: Routing incoming WS message to handlers...");
 
     const { type, data } = message;
 
@@ -121,10 +121,10 @@ class WebSocketService {
         break;
       case "join_game_response":
         if (message.status === "success") {
-          console.log("Successfully joined game:", data);
+          console.log("WebSocketService: Emitting gameJoined event to websocket subscribers.");
           this.emit("gameJoined", data);
         } else {
-          console.error("Failed to join game:", message.error);
+          console.error("WebSocketService: Failed to join game:", message.error);
           this.emit("gameJoinError", message.error);
         }
         break;
