@@ -30,17 +30,20 @@ class ConnectionManager:
     def get_connections(self):
         return self.connections
 
-    def issue_token(self, user_id: int) -> str:
+    def issue_token(self, username: str) -> str:
         token = uuid.uuid4().hex
-        self.unassigned_tokens[token] = user_id
+        self.unassigned_tokens[token] = username
         return token
 
     def validate_token(self, token: str, ws: WebSocket) -> bool:
         connection = self.connections.get(ws)
-        if isinstance(connection, dict):
-            return connection.get(token) or self.unassigned_tokens.get(token)
+        if isinstance(connection, dict) and connection.get(token):
+            return True
+        if self.unassigned_tokens.get(token):
+            return True
+        return False
 
     def assign_connection(self, ws: WebSocket, token: str) -> None:
         self.unassigned_websockets.remove(ws)
-        id = self.unassigned_tokens.pop(token)
-        self.connections[ws] = {token: id}
+        username = self.unassigned_tokens.pop(token)
+        self.connections[ws] = {token: username}
