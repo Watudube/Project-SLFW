@@ -3,9 +3,10 @@ from app.apis.user import manager
 from sqlalchemy.orm import Session
 from app.db.session import get_session
 from app.schemas.core.gameboard_schema import GameboardOut
+from app.schemas.humans.player_schema import PlayerIn
 from app.schemas.core.level_schema import LevelOut
 from app.services.core.gameboard_service import GameboardService
-from app.services.humans.user_service import UserService
+from app.services.humans.player_service import PlayerService
 import asyncio
 
 router = APIRouter(
@@ -17,20 +18,21 @@ router = APIRouter(
 async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
     await manager.connect(ws)
     gameboard_service = GameboardService(db)
-    user_service = UserService(db)
+    player_service = PlayerService(db)
     periodic_task = None
 
     async def send_perception_periodically():
         while True:
             try:
-                user_id = connections[ws][token]
-                user_perception = user_service.get_user_perception(user_id)
-                level_segment = LevelOut.model_validate(user_perception)
-
+                username = connections[ws][token]
+                if not player_service.check_player_exists(username):
+                    player_service.create_player({"username": username})
+                player_perception = player_service.get_player_perception(username)
+                validated_player_perception = LevelOut.model_validate(player_perception)                
                 await manager.send(
                     {
                         "type": "perception_update",
-                        "data": {"perception" : level_segment.model_dump()},
+                        "data": {"perception" : validated_player_perception.model_dump()},
                         "status": "success",
                     },
                     ws,
@@ -44,7 +46,7 @@ async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
                     },
                     ws,
                 )
-            await asyncio.sleep(1)
+            await asyncio.sleep(10)
 
     try:
         while True:
