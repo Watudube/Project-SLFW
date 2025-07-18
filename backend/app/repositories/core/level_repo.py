@@ -1,5 +1,5 @@
 from .base_repo import BaseRepository
-from sqlalchemy.orm import Session, selectinload, joinedload
+from sqlalchemy.orm import Session, selectinload, joinedload, noload
 from app.models.core.level import Level
 from app.models.core.tile import Tile
 
@@ -24,6 +24,14 @@ class LevelRepository(BaseRepository):
             .filter(Level.id == level_id)
             .first()
         )
+    
+    def get_empty_level(self, z_index: int) -> Level | None:
+        return (
+            self.db.query(Level)
+            .options(noload(Level.tiles))
+            .filter(Level.z_index == z_index)
+            .first()
+        ) 
     
     def get_subsection(self, level_id: int, x_start: int, x_end: int, y_start: int, y_end: int) -> Level:
         level = self.db.query(Level).filter(Level.id == level_id).first()
