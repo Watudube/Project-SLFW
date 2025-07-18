@@ -9,11 +9,11 @@ class ActorOut(EntityOut):
     strength: int
 
 class ActorIn(EntityIn):
-    health:           int
-    speed:            int
-    perception_range: int
-    hunger:   int
-    strength: int
+    health: Optional[int]
+    speed: Optional[int]
+    perception_range: Optional[int]
+    hunger: Optional[int]
+    strength: Optional[int]
 
 
 class ActorUpdate(EntityUpdate):
