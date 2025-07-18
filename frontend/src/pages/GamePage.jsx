@@ -20,7 +20,7 @@ import "./GamePage.css";
  */
 export default function GamePage() {
   // Subscribing to User Context (changes to context states should trigger re-render):
-  const { userToken, isLoading, logout } = useContext(UserContext);
+  const { userToken, isLoading, logout, forceLogout } = useContext(UserContext);
   const navigate = useNavigate();
 
   console.log("GamePage mounting...");
@@ -40,12 +40,24 @@ export default function GamePage() {
     if (userToken && !isLoading) {
       websocketService.connect(undefined, userToken); // First argument is the URL, which defaults to the base URL in the service if undefined.
 
+      // Handle WebSocket disconnection
+      const handleDisconnect = (disconnectData) => {
+        console.log("WebSocket disconnected, logging out user and redirecting to login...");
+        console.log("Disconnect details:", disconnectData);
+        forceLogout("websocket_disconnect"); // Clear user data from context
+        navigate("/"); // Navigate to login page
+      };
+
+      // Listen for WebSocket disconnection
+      websocketService.on("disconnected", handleDisconnect);
+
       // Disconnect from WebSocket server when component unmounts or userToken changes.
       return () => {
+        websocketService.off("disconnected", handleDisconnect);
         websocketService.disconnect();
       };
     }
-  }, [userToken, isLoading]);
+  }, [userToken, isLoading, logout, navigate, forceLogout]);
 
   if (isLoading) {
     return <div className="loading-container">Loading user data...</div>;

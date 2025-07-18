@@ -12,8 +12,6 @@ class WebSocketService {
   constructor() {
     this.socket = null;
     this.isConnected = false;
-    this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 5;
     this.userToken = null;
 
     // Event system: Map stores arrays of handler callback functions (see on() method) for each event type.
@@ -40,7 +38,7 @@ class WebSocketService {
       this.socket.send(JSON.stringify({ type: "join_game", userToken: this.userToken }));
 
       this.isConnected = true;
-      this.reconnectAttempts = 0; // Reset reconnect counter on successful connection.
+
       console.log("WebSocket connection established!");
     };
 
@@ -55,34 +53,30 @@ class WebSocketService {
     };
 
     // Event handler: Fires when connection is lost!
-    this.socket.onclose = () => {
-      console.log("WebSocket connection closed!");
+    this.socket.onclose = (event) => {
+      console.log("WebSocket connection closed!", event.code, event.reason);
       this.isConnected = false;
-      this.attemptReconnect();
+      this.userToken = null; // Clear user token on disconnect.
+
+      // Notify subscribers that the connection was closed
+      // This should trigger logout and navigation to login page
+      this.emit("disconnected", { code: event.code, reason: event.reason });
+
+      // Clear all event handlers after notifying to prevent memory leaks
+      this.eventHandlers.clear();
+
+      this.socket = null; // Clear socket reference.
+
+      // IMPORTANT: We do NOT attempt to reconnect automatically.
+      // User must log in again to establish a new connection.
     };
 
     // Event handler: Fires when there's a connection error.
     this.socket.onerror = (error) => {
       console.error("WebSocket error:", error);
+      // Note: onerror is typically followed by onclose, so we don't emit here
+      // to avoid duplicate disconnect handling
     };
-  }
-
-  /**
-   * Attempts to reconnect to the WebSocket server.
-   */
-  attemptReconnect() {
-    if (this.reconnectAttempts < this.maxReconnectAttempts) {
-      this.reconnectAttempts++;
-
-      console.log(`Reconnecting... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
-
-      setTimeout(() => {
-        this.connect(WEBSOCKET_BASEURL, this.userToken);
-      }, 3000); // Wait 3 seconds before trying again.
-    } else {
-      console.error("Failed to reconnect after maximum attempts.");
-      window.alert("Failed to reconnect to the game server. Please try again later.");
-    }
   }
 
   /**
@@ -194,6 +188,29 @@ class WebSocketService {
       this.socket.close();
       this.socket = null;
     }
+    this.isConnected = false;
+    this.userToken = null;
+  }
+
+  /**
+   * Check if the WebSocket is currently connected.
+   * @returns {boolean} Connection status
+   */
+  isConnectionActive() {
+    return this.isConnected && this.socket && this.socket.readyState === WebSocket.OPEN;
+  }
+
+  /**
+   * Get current connection state for debugging.
+   * @returns {object} Connection state information
+   */
+  getConnectionState() {
+    return {
+      isConnected: this.isConnected,
+      hasSocket: !!this.socket,
+      socketState: this.socket ? this.socket.readyState : null,
+      hasUserToken: !!this.userToken,
+    };
   }
 }
 

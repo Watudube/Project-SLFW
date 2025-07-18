@@ -78,6 +78,18 @@ function UserProvider({ children }) {
   }, [userToken]);
 
   /**
+   * Force logout (used for disconnections, session expiry, etc.)
+   * This is the same as logout but with different logging for debugging.
+   */
+  const forceLogout = useCallback((reason = "unknown") => {
+    console.log(`Force logout triggered. Reason: ${reason}`);
+    console.log(`Logging out user with token: ${userToken}...`);
+    setUserToken(null);
+    sessionStorage.removeItem("userToken");
+    console.log("User force logged out.");
+  }, [userToken]);
+
+  /**
    * Check for existing token on app start.
    */
   useEffect(() => {
@@ -100,6 +112,7 @@ function UserProvider({ children }) {
         login,
         createAccount,
         logout,
+        forceLogout,
       }}
     >
       {children}
