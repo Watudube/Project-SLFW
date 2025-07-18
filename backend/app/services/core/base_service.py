@@ -33,7 +33,7 @@ class BaseService(Generic[M, R]):
     def get(self, instance_id: int) -> M:
         instance = self.repo.get(instance_id)
         if not instance:
-            raise ValueError(f"Model instance with id:{instance_id} not found")
+            raise ValueError(f"Model: {self.model} with id:{instance_id} not found")
         return instance
     
     def list(self) -> list[M]:
