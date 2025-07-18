@@ -1,4 +1,5 @@
 from .core.base_model import BaseModel
+from .core.user import User
 from .core.gameboard import Gameboard
 from .core.level import Level
 from .core.tile import Tile
@@ -7,7 +8,7 @@ from .core.actor import Actor
 from .core.item import Item
 from .core.prop import Prop
 from .humans.human import Human
-from .humans.user import User
+from .humans.player import Player
 from .animals.animal import Animal
 from .animals.aggressive import Aggressive
 from .animals.passive import Passive
