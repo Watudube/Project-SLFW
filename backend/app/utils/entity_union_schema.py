@@ -5,7 +5,7 @@ from app.schemas.concrete_out_schemas import *
 UnionEntityOut = Annotated[
     Union[
         HumanOut,
-        UserOut,
+        PlayerOut,
     ],
     Field(discriminator="type")
 ]
