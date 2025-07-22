@@ -3,8 +3,8 @@ import uuid
 
 class ConnectionManager:
     def __init__(self):
-        self.connections: dict[WebSocket, dict[str, int]] = {}
-        self.unassigned_tokens: dict[str, int] = {}
+        self.connections: dict[WebSocket, dict[str, str]] = {} # {ws: {token: username}}
+        self.unassigned_tokens: dict[str, str] = {} # {token: username}
         self.unassigned_websockets: list[WebSocket] = []
 
     async def connect(self, ws: WebSocket):
@@ -43,7 +43,10 @@ class ConnectionManager:
             return True
         return False
 
-    def assign_connection(self, ws: WebSocket, token: str) -> None:
+    def assign_connection(self, ws: WebSocket, token: str) -> str:
         self.unassigned_websockets.remove(ws)
         username = self.unassigned_tokens.pop(token)
         self.connections[ws] = {token: username}
+        return username
+    
+manager = ConnectionManager()

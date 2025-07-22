@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
-from app.apis.user import manager
+from app.websockets.manager import manager
 from sqlalchemy.orm import Session
 from app.db.session import get_session
+from app.services.game_loop import GameLoopService
 from app.schemas.core.gameboard_schema import GameboardOut
 from app.schemas.humans.player_schema import PlayerIn
 from app.schemas.core.level_schema import LevelOut
@@ -17,37 +18,8 @@ router = APIRouter(
 @router.websocket("/game")
 async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
     await manager.connect(ws)
-    gameboard_service = GameboardService(db)
-    player_service = PlayerService(db)
-    periodic_task = None
-
-    async def send_perception_periodically():
-        while True:
-            try:
-                username = connections[ws][token]
-                if not player_service.check_player_exists(username):
-                    player_service.create_player({"username": username})
-                player_perception = player_service.get_player_perception(username)
-                validated_player_perception = LevelOut.model_validate(player_perception)                
-                await manager.send(
-                    {
-                        "type": "perception_update",
-                        "data": {"perception" : validated_player_perception.model_dump()},
-                        "status": "success",
-                    },
-                    ws,
-                )
-            except Exception as e:
-                await manager.send(
-                    {
-                        "type": "perception_update",
-                        "error": f"Failed to load level segment: {str(e)}",
-                        "status": "error",
-                    },
-                    ws,
-                )
-            await asyncio.sleep(10)
-
+    game_loop = GameLoopService(ws, db, manager)
+    
     try:
         while True:
             message = await ws.receive_json()
@@ -60,16 +32,16 @@ async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
             if not token or not manager.validate_token(token, ws):
                 await ws.close(code=1008, reason="Invalid token")
                 return
-
+            
             connections = manager.get_connections()
             message_type = message.get("type")
 
             if not connections.get(ws):
                 if message_type == "join_game":
                     try:
+                        gameboard_service = GameboardService(db)
                         empty_gameboard = gameboard_service.get_empty_gameboard()
                         initial_gameboard = GameboardOut.model_validate(empty_gameboard)
-
                         await manager.send(
                             {
                                 "type": "join_game_response",
@@ -78,8 +50,6 @@ async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
                             },
                             ws,
                         )
-                        manager.assign_connection(ws, token)
-                        periodic_task = asyncio.create_task(send_perception_periodically())
                     except Exception as e:
                         await manager.send(
                             {
@@ -92,43 +62,8 @@ async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
                         await ws.close(code=1008, reason="join_game required before other actions")
                         manager.disconnect(token)
                         return
-                else:
-                    await manager.send(
-                        {
-                            "type": "join_game_response",
-                            "error": "You must send a message type 'join_game' before other actions",
-                            "status": "error",
-                        },
-                        ws
-                    )
-                    await ws.close(code=1008, reason="join_game required before other actions")
-                    manager.disconnect(ws)
-                    return
-
-            else:
-                if message_type == "player_action":
-                    action = message.get("action")
-                    action_data = message.get("data")
-
-                    if action == "move":
-                        await manager.broadcast(
-                            {
-                                "type": "entity_update",
-                                "entityId": action_data.get("entityId"),
-                                "x": action_data.get("x"),
-                                "y": action_data.get("y"),
-                            }
-                        )
-                else:
-                    await manager.send(
-                        {
-                            "type": "error",
-                            "message": f"Unknown message type: {message_type}",
-                            "status": "error",
-                        },
-                        ws,
-                    )
-                    continue
+                    username = manager.assign_connection(ws, token)
+                    periodic_task = asyncio.create_task(game_loop.start(username))
 
     except WebSocketDisconnect:
         manager.disconnect(ws)
@@ -138,5 +73,4 @@ async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
         await ws.close(code=1011)
         manager.disconnect(ws)
     finally:
-        if periodic_task:
-            periodic_task.cancel()
+        periodic_task.cancel()

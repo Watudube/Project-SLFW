@@ -1,12 +1,11 @@
-from app.db.session import get_session
-from app.schemas.core.user_schema import AuthResponse, UserIn
-from app.services.core.user_service import UserService
-from app.websockets.manager import ConnectionManager
 from fastapi import APIRouter, Depends, HTTPException, status
+from app.schemas.core.user_schema import AuthResponse, UserIn
 from sqlalchemy.orm import Session
+from app.db.session import get_session
+from app.services.core.user_service import UserService
+from app.websockets.manager import manager
 
 router = APIRouter(prefix="/user", tags=["user"])
-manager = ConnectionManager()
 
 
 @router.post("/create", response_model=AuthResponse)
