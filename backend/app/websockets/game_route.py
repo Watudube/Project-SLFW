@@ -2,12 +2,9 @@ from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from app.websockets.manager import manager
 from sqlalchemy.orm import Session
 from app.db.session import get_session
-from app.services.game_loop import GameLoopService
+from backend.app.services.player_loop_service import PlayerLoopService
 from app.schemas.core.gameboard_schema import GameboardOut
-from app.schemas.humans.player_schema import PlayerIn
-from app.schemas.core.level_schema import LevelOut
 from app.services.core.gameboard_service import GameboardService
-from app.services.humans.player_service import PlayerService
 import asyncio
 
 router = APIRouter(
@@ -18,7 +15,8 @@ router = APIRouter(
 @router.websocket("/game")
 async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
     await manager.connect(ws)
-    game_loop = GameLoopService(ws, db, manager)
+    player_loop_service = PlayerLoopService(ws, db, manager)
+    player_loop = None
     
     try:
         while True:
@@ -62,8 +60,23 @@ async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
                         await ws.close(code=1008, reason="join_game required before other actions")
                         manager.disconnect(token)
                         return
-                    username = manager.assign_connection(ws, token)
-                    periodic_task = asyncio.create_task(game_loop.start(username))
+                    username = manager.assign_connection(ws, token) 
+                    player_loop = asyncio.create_task(player_loop_service.start(username))
+            else:
+                if message.get("type") == "player_action":
+                    action = message.get("action")
+                    data = message.get("data")
+                    await player_loop_service.handle_player_action(action, data)
+                else:
+                    await manager.send(
+                        {
+                            "type": "error",
+                            "message": f"Unknown message type: {message_type}",
+                            "status": "error",
+                        },
+                        ws,
+                    )
+                    continue
 
     except WebSocketDisconnect:
         manager.disconnect(ws)
@@ -73,4 +86,5 @@ async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
         await ws.close(code=1011)
         manager.disconnect(ws)
     finally:
-        periodic_task.cancel()
+        if player_loop:
+            player_loop.cancel()
