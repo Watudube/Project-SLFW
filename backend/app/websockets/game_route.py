@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from app.websockets.manager import manager
 from sqlalchemy.orm import Session
 from app.db.session import get_session
-from backend.app.services.player_loop_service import PlayerLoopService
+from app.services.gameloop.player_loop_service import PlayerLoopService
 from app.schemas.core.gameboard_schema import GameboardOut
 from app.services.core.gameboard_service import GameboardService
 import asyncio
@@ -38,7 +38,7 @@ async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
                 if message_type == "join_game":
                     try:
                         gameboard_service = GameboardService(db)
-                        empty_gameboard = gameboard_service.get_empty_gameboard()
+                        empty_gameboard = gameboard_service.get_no_entity_gameboard()
                         initial_gameboard = GameboardOut.model_validate(empty_gameboard)
                         await manager.send(
                             {
