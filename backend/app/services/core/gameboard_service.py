@@ -13,7 +13,10 @@ class GameboardService(BaseService[Gameboard, GameboardRepository]):
     def __init__(self, db: Session, model=Gameboard):
         super().__init__(db, model, GameboardRepository)
 
-    def get_empty_gameboard(self) -> Gameboard:
+    def check_gameboard_exists(self) -> Gameboard | None:
+        return self.repo.get_empty_gameboard()
+
+    def get_no_entity_gameboard(self) -> Gameboard:
         """
         Provides the gameboard with levels and tiles but without entities
         returns

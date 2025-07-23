@@ -29,3 +29,10 @@ class GameboardRepository(BaseRepository):
             )
             .one()
         )
+    
+    def get_empty_gameboard(self) -> Gameboard | None:
+        return (
+            self.db.query(Gameboard)
+            .options(noload(Gameboard.levels))
+            .first()
+        )
