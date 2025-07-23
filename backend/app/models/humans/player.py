@@ -1,5 +1,5 @@
 from .human import Human
-from sqlalchemy import Column, Integer, String, ForeignKey, UniqueConstraint, CheckConstraint
+from sqlalchemy import Column, Integer, String, ForeignKey, CheckConstraint
 from sqlalchemy.orm import relationship
 
 class Player(Human):

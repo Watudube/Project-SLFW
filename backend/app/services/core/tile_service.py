@@ -2,7 +2,6 @@ from .base_service import BaseService
 from app.models.core.tile import Tile
 from app.repositories.core.tile_repo import TileRepository
 from sqlalchemy.orm import Session
-from .level_service import LevelService
 
 class TileService(BaseService[Tile, TileRepository]):
     def __init__(self, db: Session):

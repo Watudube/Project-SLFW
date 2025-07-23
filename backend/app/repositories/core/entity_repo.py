@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 from typing import TypeVar, Type
 from app.models.core.entity import Entity
 from .base_repo import BaseRepository

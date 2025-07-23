@@ -1,4 +1,4 @@
-from typing import Generic, Type, TypeVar, cast
+from typing import Generic, Type, TypeVar
 from app.models.humans.player import Player
 from app.repositories.humans.player_repo import PlayerRepository
 from .human_service import HumanService

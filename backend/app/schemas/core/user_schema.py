@@ -1,5 +1,4 @@
 from app.schemas.core.base_schema import BaseModel, BaseIn
-from app.schemas.humans.player_schema import PlayerOut
 
 class UserIn(BaseIn):
     username: str
