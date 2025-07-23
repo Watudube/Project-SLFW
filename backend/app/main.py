@@ -1,9 +1,22 @@
-from app.websockets import game_route
+from sqlalchemy.orm import sessionmaker
+from app.db.session import engine
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.apis import *
+from app.websockets import game_route
+from contextlib import asynccontextmanager
+from app.services.gameloop.game_loop_service import GameLoopService
+import asyncio
 
-app = FastAPI()
+SessionLocal = sessionmaker(bind=engine)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    game_loop = asyncio.create_task(GameLoopService(SessionLocal()).start())
+    yield
+    game_loop.cancel()
+
+app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
