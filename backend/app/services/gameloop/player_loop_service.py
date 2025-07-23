@@ -11,16 +11,16 @@ class PlayerLoopService:
         self.db = db
         self.ws = ws
         self.manager = manager
+        self.player_service = PlayerService(self.db)
 
     async def start(self, username: str):
-        player_service = PlayerService(self.db)
         while True:
-            await self.send_player_perception(username, player_service)
+            await self.send_player_perception(username)
             await asyncio.sleep(5)
     
-    async def send_player_perception(self, username: str, player_service: PlayerService):
+    async def send_player_perception(self, username: str):
         try:
-            player_perception = player_service.get_player_perception(username)
+            player_perception = self.player_service.get_player_perception(username)
             level_segment = LevelOut.model_validate(player_perception)
 
             await self.manager.send(
