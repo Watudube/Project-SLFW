@@ -33,12 +33,8 @@ class LevelRepository(BaseRepository):
             .first()
         ) 
     
-    def get_subsection(self, level_id: int, x_start: int, x_end: int, y_start: int, y_end: int) -> Level:
-        level = self.db.query(Level).filter(Level.id == level_id).first()
-        if not level:
-            return None
-
-        tiles = (
+    def get_subsection(self, level_id: int, x_start: int, x_end: int, y_start: int, y_end: int) -> list[Tile]:
+        return (
             self.db.query(Tile)
             .options(joinedload(Tile.entities))
             .filter(
@@ -50,6 +46,3 @@ class LevelRepository(BaseRepository):
             )
             .all()
         )
-
-        level.tiles = tiles
-        return level

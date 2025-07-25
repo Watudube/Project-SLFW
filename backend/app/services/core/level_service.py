@@ -1,5 +1,6 @@
 from .base_service import BaseService
 from app.models.core.level import Level
+from app.models.core.tile import Tile
 from app.repositories.core.level_repo import LevelRepository
 from sqlalchemy.orm import Session
 
@@ -39,7 +40,7 @@ class LevelService(BaseService[Level, LevelRepository]):
             raise ValueError(f"Level with ID: {level_id} does not exist")
         return (length, width)
 
-    def get_subsection(self, level_id: int, x: int, y: int, perception_range: int) -> Level:
+    def get_subsection(self, level_id: int, x: int, y: int, perception_range: int) -> list[Tile]:
         """
         Provides a subsection of tiles from a level centered on a given coordinate
         Params
