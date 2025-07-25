@@ -26,17 +26,16 @@ export default function GamePage() {
   console.log("GamePage mounting...");
 
   /**
-   * Handle logout
+   * Generic logout handler, intended for normal user logout (not forced due to WebSocket disconnection).
    */
   const handleLogout = () => {
-    logout();
-    navigate("/");
+    logout(); // Clear user data from context and session storage.
+    navigate("/"); // Navigate out of the GamePage.
   };
 
-  // WebSocket connection management:
+  // WebSocket connection management for this component:
   useEffect(() => {
-    // Only connect if we have a user token and are not loading, connecting to the WebSocket server.
-    // This ensures we don't attempt to connect before the user token is available.
+    // Only connect to websocket if we have a user token and are not loading.
     if (userToken && !isLoading) {
       websocketService.connect(undefined, userToken); // First argument is the URL, which defaults to the base URL in the service if undefined.
 
@@ -44,14 +43,14 @@ export default function GamePage() {
       const handleDisconnect = (disconnectData) => {
         console.log("WebSocket disconnected, logging out user and redirecting to login...");
         console.log("Disconnect details:", disconnectData);
-        forceLogout("websocket_disconnect"); // Clear user data from context
-        navigate("/"); // Navigate to login page
+        forceLogout("websocket_disconnect"); // Clear user data from context and session storage.
+        navigate("/"); // Navigate out of the GamePage.
       };
 
-      // Listen for WebSocket disconnection
+      // Listen for WebSocket disconnection:
       websocketService.on("disconnected", handleDisconnect);
 
-      // Disconnect from WebSocket server when component unmounts or userToken changes.
+      // Removes "disconnected" listener and disconnects WebSocket when component unmounts.
       return () => {
         websocketService.off("disconnected", handleDisconnect);
         websocketService.disconnect();
@@ -59,10 +58,12 @@ export default function GamePage() {
     }
   }, [userToken, isLoading, logout, navigate, forceLogout]);
 
+  // If still loading user data, show loading state:
   if (isLoading) {
     return <div className="loading-container">Loading user data...</div>;
   }
 
+  // The main game page content:
   return (
     <div className="game-page-container">
       <div className="game-title-container">

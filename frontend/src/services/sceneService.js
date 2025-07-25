@@ -30,7 +30,9 @@ class SceneService {
    */
   static renderGameboard(scene) {
     if (!scene.gameboardData || !scene.gameboardData.levels) {
-      console.warn("No gameboard data to render");
+      console.warn("No gameboard data to render!");
+      console.log("Current gameboard data:");
+      console.log(scene.gameboardData);
       return;
     }
 
@@ -38,7 +40,7 @@ class SceneService {
     // For now, we are setting the first level as the active level.
     const level = scene.gameboardData.levels[0];
     if (!level || !level.tiles) {
-      console.warn("No level or tiles data found");
+      console.warn("No level or tiles data found!");
       return;
     }
 
@@ -64,7 +66,6 @@ class SceneService {
     const x = tileData.x_coord * scene.tileSize;
     const y = tileData.y_coord * scene.tileSize;
     let spriteKey = tileData.sprite;
-    if (spriteKey && spriteKey.endsWith(".png")) spriteKey = spriteKey.replace(".png", "");
 
     // Validate sprite exists before using
     if (!scene.textures.exists(spriteKey)) {

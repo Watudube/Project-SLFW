@@ -30,17 +30,17 @@ class OverworldScene extends Phaser.Scene {
     // Game world data:
     this.gameboardData = null;
     this.tileSize = 16; // Size of each tile in pixels.
-    this.tiles = new Map(); // Store tile sprites by tile ID.
-    this.entities = new Map(); // Store entity sprites by entity ID.
-    this.tileGrid = new Map(); // Store tiles by coordinate "x,y".
+    this.tiles = new Map();
+    this.entities = new Map();
+    this.tileGrid = new Map();
 
     // Player data:
     this.playerEntity = null;
     this.playerTileId = null;
 
     // Layers for organized rendering:
-    this.tileLayer = null; // Tiles render regardless of player's perception radius.
-    this.entityLayer = null; // Entities render based on player's perception radius.
+    this.tileLayer = null;
+    this.entityLayer = null;
 
     // Input throttling properties:
     this.lastInputTime = 0;
@@ -121,6 +121,7 @@ class OverworldScene extends Phaser.Scene {
    */
   setWebSocketService(websocketService) {
     this.websocketService = websocketService;
+    console.log("✅ WebSocket service received by scene!");
   }
 
   /**
