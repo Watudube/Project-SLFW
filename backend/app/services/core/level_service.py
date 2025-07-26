@@ -21,8 +21,8 @@ class LevelService(BaseService[Level, LevelRepository]):
             raise ValueError(f"Level with ID: {level_id} does not exist")
         return level
     
-    def get_empty_level(self, z_index: int) -> Level:
-        empty_level = self.repo.get_empty_level(z_index)
+    def get_empty_level_with_index(self, z_index: int) -> Level:
+        empty_level = self.repo.get_empty_level_with_index(z_index)
         if not empty_level:
             raise ValueError(f"Level with z_index: {z_index} does not exist")
         return empty_level
@@ -35,9 +35,10 @@ class LevelService(BaseService[Level, LevelRepository]):
         Returns
             - tuple(length: int, width: int)
         """
-        length, width = self.repo.get_level_dimensions(level_id)
-        if not (length and width):
+        dimensions = self.repo.get_level_dimensions(level_id)
+        if not dimensions:
             raise ValueError(f"Level with ID: {level_id} does not exist")
+        length, width = dimensions
         return (length, width)
 
     def get_subsection(self, level_id: int, x: int, y: int, perception_range: int) -> list[Tile]:
