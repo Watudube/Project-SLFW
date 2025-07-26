@@ -36,6 +36,16 @@ class SceneService {
       return;
     }
 
+    // Ensure layers exist before rendering anything
+    if (!scene.tileLayer) {
+      console.warn("SceneService: tileLayer not found during gameboard render, creating...");
+      scene.tileLayer = scene.add.group();
+    }
+    if (!scene.entityLayer) {
+      console.warn("SceneService: entityLayer not found during gameboard render, creating...");
+      scene.entityLayer = scene.add.group();
+    }
+
     // TODO: Add logic to set level based on player's current position.
     // For now, we are setting the first level as the active level.
     const level = scene.gameboardData.levels[0];
@@ -63,6 +73,16 @@ class SceneService {
    * @param {object} tileData
    */
   static renderTile(scene, tileData) {
+    // Ensure layers exist before rendering
+    if (!scene.tileLayer) {
+      console.warn("SceneService: tileLayer not found, recreating layers...");
+      scene.tileLayer = scene.add.group();
+    }
+    if (!scene.entityLayer) {
+      console.warn("SceneService: entityLayer not found, recreating layers...");
+      scene.entityLayer = scene.add.group();
+    }
+
     const x = tileData.x_coord * scene.tileSize;
     const y = tileData.y_coord * scene.tileSize;
     let spriteKey = tileData.sprite;
@@ -92,6 +112,16 @@ class SceneService {
    * @param {object} tileData
    */
   static renderEntity(scene, entityData, tileData) {
+    // Ensure layers exist before rendering
+    if (!scene.entityLayer) {
+      console.warn("SceneService: entityLayer not found, recreating layers...");
+      scene.entityLayer = scene.add.group();
+    }
+    if (!scene.tileLayer) {
+      console.warn("SceneService: tileLayer not found, recreating layers...");
+      scene.tileLayer = scene.add.group();
+    }
+
     const x = tileData.x_coord * scene.tileSize + scene.tileSize / 2;
     const y = tileData.y_coord * scene.tileSize + scene.tileSize / 2;
     const entitySprite = scene.add.image(x, y, entityData.sprite);

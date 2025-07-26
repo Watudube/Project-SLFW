@@ -26,8 +26,8 @@ class OverworldScene extends Phaser.Scene {
     }); // Unique key for the scene, used to identify it in the game.
 
     // Initializing properties for objects in the scene.
-    this.player = null; // Placeholder for player object.
-    this.cursors = null; // Placeholder for cursor keys.
+    this.player = null;
+    this.cursors = null;
 
     // Game world data:
     this.gameboardData = null;

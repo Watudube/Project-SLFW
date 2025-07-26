@@ -64,7 +64,11 @@ class WebSocketManager {
         // Route message to appropriate handler
         handleIncomingMessage(this.game, data);
       } catch (error) {
-        console.error("WebSocketManager: Failed to parse message:", error);
+        console.error("WebSocketManager: Failed to process message:", error);
+        console.error("Message data:", event.data);
+
+        // Don't treat processing errors as connection errors
+        // Just log them and continue
       }
     };
 
