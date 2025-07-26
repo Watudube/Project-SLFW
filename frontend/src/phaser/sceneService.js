@@ -67,10 +67,12 @@ class SceneService {
     const y = tileData.y_coord * scene.tileSize;
     let spriteKey = tileData.sprite;
 
-    // Validate sprite exists before using
+    console.log(`Rendering tile at (${tileData.x_coord}, ${tileData.y_coord}) with sprite '${spriteKey}'.`);
+
+    // Validate sprite exists before using.
     if (!scene.textures.exists(spriteKey)) {
       console.warn(`Sprite key '${spriteKey}' not found, using placeholder...`);
-      spriteKey = "tile_grass_01"; // TODO: Add an error sprite or fallback tile.
+      spriteKey = "placeholder";
     }
 
     const tileSprite = scene.add.image(x, y, spriteKey);
@@ -138,6 +140,152 @@ class SceneService {
     if (scene.gameboardData?.levels?.[0]) {
       const level = scene.gameboardData.levels[0];
       scene.cameras.main.setBounds(0, 0, level.width * scene.tileSize, level.length * scene.tileSize);
+    }
+  }
+
+  // ------------ Scene State Update Methods ------------ //
+
+  /**
+   * Update tiles based on server data
+   * @param {Phaser.Scene} scene
+   * @param {Array} tilesData - Array of tile updates
+   */
+  static updateTiles(scene, tilesData) {
+    tilesData.forEach((tileData) => {
+      if (scene.tiles.has(tileData.id)) {
+        // Update existing tile
+        const tile = scene.tiles.get(tileData.id);
+        tile.data = { ...tile.data, ...tileData };
+
+        // Update sprite if needed
+        if (tileData.sprite && tile.sprite) {
+          tile.sprite.setTexture(tileData.sprite);
+        }
+      } else {
+        // Render new tile
+        SceneService.renderTile(scene, tileData);
+      }
+    });
+  }
+
+  /**
+   * Update entities based on server data
+   * @param {Phaser.Scene} scene
+   * @param {Array} entitiesData - Array of entity updates
+   */
+  static updateEntities(scene, entitiesData) {
+    entitiesData.forEach((entityData) => {
+      if (scene.entities.has(entityData.id)) {
+        const entity = scene.entities.get(entityData.id);
+        entity.data = { ...entity.data, ...entityData };
+
+        // Update sprite position if needed
+        if (entityData.position && entity.sprite) {
+          const tileInfo = scene.tiles.get(entity.tileId);
+          if (tileInfo) {
+            const x = tileInfo.data.x_coord * scene.tileSize + scene.tileSize / 2;
+            const y = tileInfo.data.y_coord * scene.tileSize + scene.tileSize / 2;
+            entity.sprite.setPosition(x, y);
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * Add new entities to the scene
+   * @param {Phaser.Scene} scene
+   * @param {Array} newEntities - Array of new entities
+   */
+  static addNewEntities(scene, newEntities) {
+    newEntities.forEach((entityData) => {
+      const tileInfo = scene.tiles.get(entityData.tile_id);
+      if (tileInfo) {
+        SceneService.renderEntity(scene, entityData, tileInfo.data);
+      }
+    });
+  }
+
+  /**
+   * Remove entities from the scene
+   * @param {Phaser.Scene} scene
+   * @param {Array} entityIds - Array of entity IDs to remove
+   */
+  static removeEntities(scene, entityIds) {
+    entityIds.forEach((entityId) => {
+      if (scene.entities.has(entityId)) {
+        const entity = scene.entities.get(entityId);
+        if (entity.sprite) {
+          entity.sprite.destroy();
+        }
+        scene.entities.delete(entityId);
+      }
+    });
+  }
+
+  /**
+   * Update player position
+   * @param {Phaser.Scene} scene
+   * @param {object} positionData - New position data
+   */
+  static updatePlayerPosition(scene, positionData) {
+    if (scene.player && positionData.tile_id) {
+      const tileInfo = scene.tiles.get(positionData.tile_id);
+      if (tileInfo) {
+        const x = tileInfo.data.x_coord * scene.tileSize + scene.tileSize / 2;
+        const y = tileInfo.data.y_coord * scene.tileSize + scene.tileSize / 2;
+
+        // Smooth movement animation could be added here
+        scene.player.setPosition(x, y);
+
+        // Update player tile reference
+        scene.playerTileId = positionData.tile_id;
+
+        // Update camera to follow player
+        scene.cameras.main.centerOn(x, y);
+      }
+    }
+  }
+
+  /**
+   * Update player stats
+   * @param {Phaser.Scene} scene
+   * @param {object} statsData - New stats data
+   */
+  static updatePlayerStats(scene, statsData) {
+    if (scene.playerEntity) {
+      scene.playerEntity = { ...scene.playerEntity, ...statsData };
+    }
+  }
+
+  /**
+   * Update player inventory
+   * @param {Phaser.Scene} scene
+   * @param {object} inventoryData - New inventory data
+   */
+  static updatePlayerInventory(scene, inventoryData) {
+    // Handle inventory updates
+    console.log("SceneService: Updating player inventory:", inventoryData);
+
+    // TODO: Implement inventory update logic
+    // This could update UI elements, player data, etc.
+  }
+
+  /**
+   * Handle level changes
+   * @param {Phaser.Scene} scene
+   * @param {object} levelChanges - Level change data
+   */
+  static handleLevelChanges(scene, levelChanges) {
+    console.log("SceneService: Handling level changes:", levelChanges);
+
+    // Could implement level transitions here
+    // For now, just re-render the gameboard
+    if (levelChanges.new_level) {
+      scene.gameboardData = levelChanges.new_level;
+      SceneService.clearWorld(scene);
+      SceneService.renderGameboard(scene);
+      SceneService.setupCamera(scene);
     }
   }
 }

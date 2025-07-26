@@ -1,5 +1,5 @@
 // Importing Dependencies:
-import { useEffect, useContext } from "react";
+import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 // Importing Components:
@@ -7,9 +7,6 @@ import PhaserComponent from "../components/PhaserComponent";
 
 // Importing Contexts:
 import { UserContext } from "../contexts/UserContext";
-
-// Importing Services:
-import { websocketService } from "../services/websocketService";
 
 // Importing Styles:
 import "./GamePage.css";
@@ -20,43 +17,19 @@ import "./GamePage.css";
  */
 export default function GamePage() {
   // Subscribing to User Context (changes to context states should trigger re-render):
-  const { userToken, isLoading, logout, forceLogout } = useContext(UserContext);
+  const { isLoading, logout } = useContext(UserContext);
   const navigate = useNavigate();
 
   console.log("GamePage mounting...");
 
   /**
-   * Generic logout handler, intended for normal user logout (not forced due to WebSocket disconnection).
+   * Handles user logout by clearing user data and navigating to the home page.
+   * @returns {void}
    */
   const handleLogout = () => {
     logout(); // Clear user data from context and session storage.
     navigate("/"); // Navigate out of the GamePage.
   };
-
-  // WebSocket connection management for this component:
-  useEffect(() => {
-    // Only connect to websocket if we have a user token and are not loading.
-    if (userToken && !isLoading) {
-      websocketService.connect(undefined, userToken); // First argument is the URL, which defaults to the base URL in the service if undefined.
-
-      // Handle WebSocket disconnection
-      const handleDisconnect = (disconnectData) => {
-        console.log("WebSocket disconnected, logging out user and redirecting to login...");
-        console.log("Disconnect details:", disconnectData);
-        forceLogout("websocket_disconnect"); // Clear user data from context and session storage.
-        navigate("/"); // Navigate out of the GamePage.
-      };
-
-      // Listen for WebSocket disconnection:
-      websocketService.on("disconnected", handleDisconnect);
-
-      // Removes "disconnected" listener and disconnects WebSocket when component unmounts.
-      return () => {
-        websocketService.off("disconnected", handleDisconnect);
-        websocketService.disconnect();
-      };
-    }
-  }, [userToken, isLoading, logout, navigate, forceLogout]);
 
   // If still loading user data, show loading state:
   if (isLoading) {
@@ -76,7 +49,7 @@ export default function GamePage() {
         </button>
       </div>
       <div className="gui-container">
-        <PhaserComponent websocketService={websocketService} userToken={userToken} />
+        <PhaserComponent />
       </div>
       <div className="insrtuctions-container">
         <h3>

@@ -5,4 +5,5 @@ export const sprites = {
   deer: "/assets/actors/deer_placeholder.png",
   tile_grass_01: "/assets/tiles/tile_grass_01.png",
   tile_wall_single: "/assets/tiles/tile_wall_single.png",
+  placeholder: "/assets/placeholder.png",
 };
