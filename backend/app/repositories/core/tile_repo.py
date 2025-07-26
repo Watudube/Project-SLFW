@@ -22,10 +22,10 @@ class TileRepository(BaseRepository):
             .first()
         )
     
-    def get_empty_tile_with_coords(self, x_coord: int, y_coord: int) -> Tile | None:
+    def get_empty_tile_with_coords(self, level_id: int, x_coord: int, y_coord: int) -> Tile | None:
         return (
             self.db.query(Tile)
             .options(noload(Tile.entities))
-            .filter(Tile.x_coord == x_coord, Tile.y_coord == y_coord)
+            .filter(Tile.level_id == level_id, Tile.x_coord == x_coord, Tile.y_coord == y_coord)
             .first()
         )

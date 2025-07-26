@@ -37,5 +37,5 @@ class TileService(BaseService[Tile, TileRepository]):
             raise ValueError(f"Tile with ID: {tile_id} does not exist")
         return tile
     
-    def get_empty_tile_with_coords(self, x_coord: int, y_coord: int) -> Tile | None:
-        return self.repo.get_empty_tile_with_coords(x_coord, y_coord)        
+    def get_empty_tile_with_coords(self, level_id: int, x_coord: int, y_coord: int) -> Tile | None:
+        return self.repo.get_empty_tile_with_coords(level_id, x_coord, y_coord)        

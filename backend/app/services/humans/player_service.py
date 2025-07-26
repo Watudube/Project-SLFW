@@ -20,7 +20,7 @@ class PlayerService(HumanService[M, R], Generic[M, R]):
         x_coord = (level.length + 1) // 2
         y_coord = (level.width + 1) // 2
         tile_service = TileService(self.db)
-        tile = tile_service.get_empty_tile_with_coords(x_coord, y_coord)
+        tile = tile_service.get_empty_tile_with_coords(level.id, x_coord, y_coord)
         if tile:
             if not tile.is_wall:
                 return tile.id
@@ -37,7 +37,7 @@ class PlayerService(HumanService[M, R], Generic[M, R]):
         player_in["sprite"] = "player"
         return self.create(player_in)
 
-    def get_player(self, username: int) -> Player:
+    def get_player(self, username: str) -> Player:
         player = self.repo.get_player(username)
         if not player:
             raise ValueError(f"Player: {username} not found")
