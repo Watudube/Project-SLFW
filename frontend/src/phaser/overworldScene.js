@@ -2,7 +2,10 @@
 import Phaser from "phaser";
 
 // Importing Services:
-import SceneService from "../services/sceneService.js";
+import SceneService from "./sceneService.js";
+
+// Importing Event Handlers:
+import { addWebSocketHandlers } from "./sceneEventHandlers.js";
 
 // Importing Constants:
 import { SCENE_KEYS } from "./sceneKeys";
@@ -25,7 +28,6 @@ class OverworldScene extends Phaser.Scene {
     // Initializing properties for objects in the scene.
     this.player = null; // Placeholder for player object.
     this.cursors = null; // Placeholder for cursor keys.
-    this.websocketService = null; // WebSocket service reference.
 
     // Game world data:
     this.gameboardData = null;
@@ -45,6 +47,12 @@ class OverworldScene extends Phaser.Scene {
     // Input throttling properties:
     this.lastInputTime = 0;
     this.inputThrottle = 200;
+
+    // Game state:
+    this.isGameReady = false;
+
+    // Add WebSocket event handlers to this scene
+    addWebSocketHandlers(this);
   }
 
   // ------------ Overwriting Phaser Scene Methods ------------ //
@@ -100,9 +108,6 @@ class OverworldScene extends Phaser.Scene {
   }
 
   destroy() {
-    // Clean up WebSocket reference.
-    this.websocketService = null;
-
     // Clear all collections.
     this.tiles.clear();
     this.entities.clear();
@@ -116,35 +121,26 @@ class OverworldScene extends Phaser.Scene {
   // ------ Overworld Scene Specific Methods ------ //
 
   /**
-   * Sets the WebSocket service reference for this scene.
-   * @param {WebSocketService} websocketService - The WebSocket service instance.
+   * Set callbacks for communicating with React layer
+   * @param {Function} onDisconnected - Callback for disconnection
+   * @param {Function} onCriticalError - Callback for critical errors
    */
-  setWebSocketService(websocketService) {
-    this.websocketService = websocketService;
-    console.log("✅ WebSocket service received by scene!");
-  }
-
-  /**
-   * Handle initial gameboard data from server.
-   * @param {object} gameboardData - Complete gameboard data.
-   */
-  handleInitialGameboardData(gameboardData) {
-    console.log("Handling initial gameboard data:");
-    console.log(gameboardData);
-
-    this.gameboardData = gameboardData;
-
-    SceneService.clearWorld(this);
-    SceneService.renderGameboard(this);
-    SceneService.setupCamera(this);
+  setReactCallbacks(onDisconnected, onCriticalError) {
+    this.onDisconnected = onDisconnected;
+    this.onCriticalError = onCriticalError;
   }
 
   /**
    * Handle player input and send actions to server.
    */
   handleInput() {
-    // If WebSocket service is not connected, do nothing
-    if (!this.websocketService || !this.websocketService.isConnected) {
+    // If WebSocket manager is not connected, do nothing.
+    if (!this.game.webSocketManager || !this.game.webSocketManager.isConnectionActive()) {
+      return;
+    }
+
+    // Only process input if game is ready.
+    if (!this.isGameReady) {
       return;
     }
 
@@ -175,42 +171,9 @@ class OverworldScene extends Phaser.Scene {
     }
 
     if (action) {
-      this.websocketService.sendPlayerAction(action, data);
+      this.game.webSocketManager.sendPlayerAction(action, data);
       this.lastInputTime = currentTime;
     }
-  }
-
-  /**
-   * Handle world updates from the server
-   * @param {object} data - World update data
-   */
-  handleWorldUpdate(data) {
-    console.log("Handling world update in scene:");
-    console.log(data);
-
-    // WIP: Update gameboard data and re-render as needed.
-  }
-
-  /**
-   * Handle entity updates from the server
-   * @param {object} data - Entity update data
-   */
-  handleEntityUpdate(data) {
-    console.log("Handling entity update in scene:");
-    console.log(data);
-
-    // WIP: Update entities based on server data.
-  }
-
-  /**
-   * Handle player updates from the server
-   * @param {object} data - Player update data
-   */
-  handlePlayerUpdate(data) {
-    console.log("Handling player update in scene:");
-    console.log(data);
-
-    // WIP: Update player entity based on server data.
   }
 }
 
