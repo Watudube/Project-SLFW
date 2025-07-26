@@ -42,5 +42,19 @@ class PlayerLoopService:
                 self.ws,
             )
 
-    async def handle_player_action(self, action, data):
+    def handle_player_move(self, data: dict) -> None:
         pass
+
+    async def handle_player_action(self, action: str, data: dict):
+        match action:
+            case "move":
+                self.handle_player_move(data)
+            case _:
+                await self.manager.send(
+                    {
+                        "type": "error",
+                        "error": f"Player attempted unknown action: {action}",
+                        "status": "error",
+                    },
+                    self.ws
+                )
