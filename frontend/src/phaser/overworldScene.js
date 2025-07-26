@@ -51,6 +51,10 @@ class OverworldScene extends Phaser.Scene {
     // Game state:
     this.isGameReady = false;
 
+    // React callback placeholders
+    this.onDisconnected = null;
+    this.onCriticalError = null;
+
     // Add WebSocket event handlers to this scene
     addWebSocketHandlers(this);
   }
@@ -95,6 +99,11 @@ class OverworldScene extends Phaser.Scene {
 
     // Set up camera:
     this.cameras.main.setBackgroundColor(0x2c3e50);
+
+    // Get React callbacks from game instance
+    if (this.game.reactCallbacks) {
+      this.setReactCallbacks(this.game.reactCallbacks.onDisconnected, this.game.reactCallbacks.onCriticalError);
+    }
   }
 
   /**

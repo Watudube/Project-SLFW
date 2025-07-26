@@ -63,29 +63,22 @@ export default function PhaserComponent() {
       // Create the Phaser game instance:
       gameRef.current = new Phaser.Game(PhaserConfig);
 
+      // Store React callbacks on game instance for scenes to access
+      gameRef.current.reactCallbacks = {
+        onDisconnected: (disconnectData) => {
+          console.log("WebSocket disconnected, logging out user...");
+          forceLogout("websocket_disconnect");
+          navigate("/");
+        },
+        onCriticalError: (errorMessage) => {
+          console.log("Critical error occurred:", errorMessage);
+          forceLogout("critical_error");
+          navigate("/");
+        },
+      };
+
       // Add WebSocket manager to the game:
       gameRef.current.webSocketManager = new WebSocketManager(gameRef.current);
-
-      // Set up scene callbacks for React communication:
-      const scene = gameRef.current.scene.getScene("OverworldScene");
-      if (scene) {
-        scene.setReactCallbacks(
-          // onDisconnected
-          (disconnectData) => {
-            // TODO: Handle disconnection logic here.
-            console.log("WebSocket disconnected, logging out user...");
-            forceLogout("websocket_disconnect");
-            navigate("/");
-          },
-          // onCriticalError
-          (errorMessage) => {
-            // TODO: Handle critical error logic here.
-            console.log("Critical error occurred:", errorMessage);
-            forceLogout("critical_error");
-            navigate("/");
-          }
-        );
-      }
 
       // Connect to WebSocket
       gameRef.current.webSocketManager.connect(userToken);
