@@ -213,7 +213,10 @@ export function addWebSocketHandlers(scene) {
 
     // Notify React layer about disconnection
     if (this.onDisconnected) {
+      console.log("SceneEventHandlers: Calling onDisconnected callback...");
       this.onDisconnected(event);
+    } else {
+      console.warn("SceneEventHandlers: No onDisconnected callback available!");
     }
 
     console.log("SceneEventHandlers: [End] Handling disconnection.");

@@ -66,7 +66,9 @@ export default function PhaserComponent() {
       // Store React callbacks on game instance for scenes to access
       gameRef.current.reactCallbacks = {
         onDisconnected: (disconnectData) => {
-          console.log("WebSocket disconnected, logging out user...");
+          console.log("WebSocket disconnected, logging out user...", disconnectData);
+
+          // Always force logout
           forceLogout("websocket_disconnect");
           navigate("/");
         },
