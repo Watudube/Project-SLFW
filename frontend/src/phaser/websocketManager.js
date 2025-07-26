@@ -147,7 +147,7 @@ class WebSocketManager {
    */
   handleConnectionError() {
     // Notify game scenes about connection issues
-    const scene = this.game.scene.getScene("OverworldScene");
+    const scene = this.game.scene.getScene("OVERWORLD_SCENE");
     if (scene && scene.handleConnectionError) {
       scene.handleConnectionError();
     }

@@ -50,12 +50,14 @@ export function handleIncomingMessage(game, message) {
  * @param {object} response
  */
 function handleGameJoinResponse(game, response) {
-  const scene = game.scene.getScene("OverworldScene");
+  const scene = game.scene.getScene("OVERWORLD_SCENE");
 
   if (response.status === "success") {
     console.log("WebSocketMessageHandler: Game join successful");
     if (scene && scene.handleGameJoined) {
       scene.handleGameJoined(response.data);
+    } else {
+      console.warn("WebSocketMessageHandler: No scene found to handle game joined. Scene:", scene);
     }
   } else {
     console.error("WebSocketMessageHandler: Game join failed:", response.error);
@@ -71,7 +73,7 @@ function handleGameJoinResponse(game, response) {
  * @param {object} data
  */
 function handleWorldUpdate(game, data) {
-  const scene = game.scene.getScene("OverworldScene");
+  const scene = game.scene.getScene("OVERWORLD_SCENE");
   if (scene && scene.handleWorldUpdate) {
     scene.handleWorldUpdate(data);
   }
@@ -83,7 +85,7 @@ function handleWorldUpdate(game, data) {
  * @param {object} data
  */
 function handleEntityUpdate(game, data) {
-  const scene = game.scene.getScene("OverworldScene");
+  const scene = game.scene.getScene("OVERWORLD_SCENE");
   if (scene && scene.handleEntityUpdate) {
     scene.handleEntityUpdate(data);
   }
@@ -95,7 +97,7 @@ function handleEntityUpdate(game, data) {
  * @param {object} data
  */
 function handlePlayerUpdate(game, data) {
-  const scene = game.scene.getScene("OverworldScene");
+  const scene = game.scene.getScene("OVERWORLD_SCENE");
   if (scene && scene.handlePlayerUpdate) {
     scene.handlePlayerUpdate(data);
   }
