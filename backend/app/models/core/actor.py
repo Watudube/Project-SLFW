@@ -9,7 +9,7 @@ class Actor(Entity):
 
     id = Column(Integer, ForeignKey("entities.id"), primary_key=True)
     health = Column(Integer, nullable=False, default=100)
-    perception_range = Column(Integer, default=16, nullable=False)
+    perception_range = Column(Integer, default=5, nullable=False)
     hunger = Column(Integer, default=0, nullable=False)
     strength = Column(Integer, default=10, nullable=False)
     speed = Column(Integer, default =10, nullable=False)
