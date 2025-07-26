@@ -3,7 +3,7 @@ from app.models.humans.player import Player
 from app.repositories.humans.player_repo import PlayerRepository
 from .human_service import HumanService
 from sqlalchemy.orm import Session
-from app.models.core.level import Level
+from app.models.core.tile import Tile
 from app.services.core.tile_service import TileService
 from app.services.core.level_service import LevelService
 
@@ -26,7 +26,10 @@ class PlayerService(HumanService[M, R], Generic[M, R]):
                 return tile.id
         # Implement fibonacci sequence
 
-    def create_player(self, player_in: dict) -> Player:
+    def create_player_if_not_exists(self, player_in: dict) -> Player:
+        player = self.check_player_exists(player_in["username"])
+        if player:
+            return player
         player_in["tile_id"] = self.find_safe_spawn_tile()
         player_in["type"] = "player"
         player_in["label"] = player_in["username"]
@@ -43,13 +46,12 @@ class PlayerService(HumanService[M, R], Generic[M, R]):
     def check_player_exists(self, username: int) -> Player | None:
         return self.repo.get_player(username)
 
-    def get_player_perception(self, username: int) -> Level:
+    def get_player_perception(self, username: int) -> list[Tile]:
         player = self.get_player(username)
         tile = TileService(self.db).get_empty_tile(player.tile_id)
-        user_perception = LevelService(self.db).get_subsection(
+        return LevelService(self.db).get_subsection(
             tile.level_id,
             tile.x_coord,
             tile.y_coord,
             player.perception_range
         )
-        return user_perception
