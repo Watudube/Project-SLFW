@@ -1,8 +1,8 @@
-from .base_model import BaseModel
+from .base_model import Base
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 
-class User(BaseModel):
+class User(Base):
     __tablename__ = "users"
 
     username = Column(String, primary_key=True, unique=True)
