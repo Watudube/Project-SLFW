@@ -29,7 +29,7 @@ class WebSocketManager {
     }
 
     this.userToken = userToken;
-    console.log("WebSocketManager: Connecting to server...");
+    console.log("WebSocketManager: Connecting to server with token:", userToken ? `${userToken.substring(0, 10)}...` : "null");
 
     try {
       this.socket = new WebSocket(url);
@@ -50,11 +50,13 @@ class WebSocketManager {
       console.log("WebSocketManager: Connection established");
       this.isConnected = true;
 
-      // Join game session
-      this.sendMessage({
+      // Join game session with current token
+      const joinMessage = {
         type: "join_game",
         userToken: this.userToken,
-      });
+      };
+      console.log("WebSocketManager: Sending join_game with token:", this.userToken ? `${this.userToken.substring(0, 10)}...` : "null");
+      this.sendMessage(joinMessage);
     };
 
     this.socket.onmessage = (event) => {
@@ -81,6 +83,15 @@ class WebSocketManager {
       if (event.reason === "User initiated disconnect") {
         this.socket = null;
         return;
+      }
+
+      // Check if this was due to invalid token (backend sends code 1008 for invalid token)
+      if (event.code === 1008 && event.reason === "Invalid token") {
+        console.log("WebSocketManager: Connection closed due to invalid token - triggering critical error");
+        // For authentication failures, trigger critical error callback directly
+        if (this.game.reactCallbacks && this.game.reactCallbacks.onCriticalError) {
+          this.game.reactCallbacks.onCriticalError("Authentication failed: Invalid token");
+        }
       }
 
       this.socket = null;
@@ -153,6 +164,20 @@ class WebSocketManager {
       }
     });
 
+    // For unexpected disconnections, ensure React callbacks are triggered
+    // This provides a safety net in case scene callbacks don't work
+    if (!event.wasUserInitiated) {
+      console.log("WebSocketManager: Unexpected disconnection detected - ensuring React callback is triggered");
+      
+      // Try to trigger the onDisconnected callback as a fallback
+      if (this.game.reactCallbacks && this.game.reactCallbacks.onDisconnected) {
+        console.log("WebSocketManager: Triggering React onDisconnected callback for unexpected disconnection");
+        this.game.reactCallbacks.onDisconnected(event);
+      } else {
+        console.warn("WebSocketManager: No React onDisconnected callback available!");
+      }
+    }
+
     // Clear user token
     this.userToken = null;
   }
@@ -161,18 +186,27 @@ class WebSocketManager {
    * Disconnect from server
    */
   disconnect() {
+    console.log("WebSocketManager: disconnect() called");
+    
     if (this.socket) {
+      console.log("WebSocketManager: Closing WebSocket connection...");
       this.isConnected = false;
 
       // Call handleDisconnection BEFORE closing to ensure React callbacks work
       this.handleDisconnection({ code: 1000, reason: "User initiated disconnect", wasUserInitiated: true });
 
-      this.socket.close(1000, "User initiated disconnect");
+      // Close the socket if it's not already closed
+      if (this.socket.readyState === WebSocket.OPEN || this.socket.readyState === WebSocket.CONNECTING) {
+        this.socket.close(1000, "User initiated disconnect");
+      }
       this.socket = null;
+    } else {
+      console.log("WebSocketManager: No socket to disconnect");
     }
 
     // Clear user token as part of cleanup
     this.userToken = null;
+    console.log("WebSocketManager: disconnect() completed");
   }
 
   /**

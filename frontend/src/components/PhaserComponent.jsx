@@ -72,18 +72,38 @@ export default function PhaserComponent() {
     // Store React callbacks on game instance for scenes to access
     gameRef.current.reactCallbacks = {
       onDisconnected: (disconnectData) => {
-        console.log("WebSocket disconnected, logging out user...", disconnectData);
+        console.log("PhaserComponent: WebSocket disconnected, logging out user...", disconnectData);
 
-        // Always force logout
+        // Ensure thorough cleanup before logout
+        if (gameRef.current?.webSocketManager) {
+          console.log("PhaserComponent: Disconnecting WebSocket manager before logout...");
+          gameRef.current.webSocketManager.disconnect();
+        }
+
+        // Force logout
         forceLogout("websocket_disconnect");
+        
+        // Navigate after cleanup
         navigate("/");
       },
       onCriticalError: (errorMessage) => {
-        console.log("Critical error occurred:", errorMessage);
+        console.log("PhaserComponent: Critical error occurred:", errorMessage);
+
+        // Ensure thorough cleanup before logout
+        if (gameRef.current?.webSocketManager) {
+          console.log("PhaserComponent: Disconnecting WebSocket manager due to critical error...");
+          gameRef.current.webSocketManager.disconnect();
+        }
+
+        // Force logout
         forceLogout("critical_error");
+        
+        // Navigate after cleanup
         navigate("/");
       },
     };
+
+    console.log("PhaserComponent: React callbacks set on game instance:", !!gameRef.current.reactCallbacks);
 
     // Add WebSocket manager to the game:
     gameRef.current.webSocketManager = new WebSocketManager(gameRef.current);

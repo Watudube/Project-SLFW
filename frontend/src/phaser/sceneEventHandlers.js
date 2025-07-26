@@ -246,6 +246,39 @@ export function addWebSocketHandlers(scene) {
     }
   };
 
+  /**
+   * Handle authentication errors from server.
+   * @param {string} errorMessage - Authentication error message.
+   */
+  scene.handleAuthenticationError = function (errorMessage) {
+    console.error("SceneEventHandlers: Authentication error:", errorMessage);
+
+    // Clear game state and scene immediately
+    this.isGameReady = false;
+
+    // Clean up scene completely
+    SceneService.clearWorld(this);
+
+    // Reset scene state if method exists
+    if (this.resetSceneState) {
+      console.log("SceneEventHandlers: Calling resetSceneState for authentication failure...");
+      this.resetSceneState();
+    }
+
+    // Stop any ongoing input processing
+    if (this.input && this.input.keyboard) {
+      this.input.keyboard.removeAllKeys();
+    }
+
+    // Notify React layer about authentication failure
+    if (this.onCriticalError) {
+      console.log("SceneEventHandlers: Calling onCriticalError for authentication failure...");
+      this.onCriticalError(`Authentication failed: ${errorMessage}`);
+    } else {
+      console.warn("SceneEventHandlers: No onCriticalError callback available for authentication failure!");
+    }
+  };
+
   // Initialize scene properties.
   scene.isGameReady = false;
 }
