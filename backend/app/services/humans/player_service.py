@@ -16,7 +16,7 @@ class PlayerService(HumanService[M, R], Generic[M, R]):
 
     def find_safe_spawn_tile(self) -> int:
         level_service = LevelService(self.db)
-        level = level_service.get_empty_level(0)
+        level = level_service.get_empty_base_level()
         x_coord = (level.length + 1) // 2
         y_coord = (level.width + 1) // 2
         tile_service = TileService(self.db)

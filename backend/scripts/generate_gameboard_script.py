@@ -1,6 +1,9 @@
 import json
 import os
 
+LENGTH = 16
+WIDTH = 16
+
 def generate_gameboard_json():
     """
     Generate a complete gameboard JSON with:
@@ -19,8 +22,8 @@ def generate_gameboard_json():
                 "id": 1,
                 "gameboard_id": 1,
                 "z_index": 0,
-                "length": 16,
-                "width": 16,
+                "length": LENGTH,
+                "width": WIDTH,
                 "tiles": []
             }
         ]
@@ -30,10 +33,10 @@ def generate_gameboard_json():
     tile_id = 1
     tiles = []
     
-    for y in range(16):
-        for x in range(16):
+    for y in range(WIDTH):
+        for x in range(LENGTH):
             # Determine if this is a wall tile (on the edge)
-            is_wall = (x == 0 or x == 15 or y == 0 or y == 15)
+            is_wall = (x == 0 or x == LENGTH-1 or y == 0 or y == WIDTH-1)
             
             # Create base tile
             tile = {
@@ -62,6 +65,20 @@ def generate_gameboard_json():
             
             tiles.append(tile)
             tile_id += 1
+    
+    tile = {
+        "id": -1,
+        "level_id": 1,
+        "x_coord": LENGTH + 100,
+        "y_coord": WIDTH + 100,
+        "type": "floor",
+        "is_wall": False,
+        "sprite": "tile_grass_01",
+        "speed": 0,
+        "entities": []
+    }
+    tiles.append(tile)
+    
     
     # Add tiles to the level
     gameboard["levels"][0]["tiles"] = tiles
@@ -95,15 +112,15 @@ def save_gameboard_to_file(filename=None):
 def print_board_visualization():
     """Print a visual representation of the board layout"""
     print("\nBoard Layout (W=Wall, G=Grass, P=Player):")
-    print("  " + "".join(f"{i:2}" for i in range(16)))
+    print("  " + "".join(f"{i:2}" for i in range(WIDTH)))
     
-    for y in range(16):
+    for y in range(WIDTH):
         row = f"{y:2}"
-        for x in range(16):
-            if x == 0 or x == 15 or y == 0 or y == 15:
+        for x in range(LENGTH):
+            if x == 0 or x == LENGTH-1 or y == 0 or y == WIDTH-1:
                 char = "W"
-            elif x == 7 and y == 7:
-                char = "P"
+            # elif x == 7 and y == 7:
+            #     char = "P"
             else:
                 char = "G"
             row += f" {char}"
@@ -119,5 +136,5 @@ print_board_visualization()
 gameboard = generate_gameboard_json()
 print(f"\nSample tiles:")
 print(f"Corner wall (0,0): {json.dumps(gameboard['levels'][0]['tiles'][0], indent=2)}")
-print(f"Player tile (7,7): {json.dumps(gameboard['levels'][0]['tiles'][7*16 + 7], indent=2)}")
-print(f"Interior grass (5,5): {json.dumps(gameboard['levels'][0]['tiles'][5*16 + 5], indent=2)}")
+print(f"Player tile (7,7): {json.dumps(gameboard['levels'][0]['tiles'][7*LENGTH + 7], indent=2)}")
+print(f"Interior grass (5,5): {json.dumps(gameboard['levels'][0]['tiles'][5*WIDTH + 5], indent=2)}")
