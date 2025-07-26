@@ -19,11 +19,12 @@ export function addWebSocketHandlers(scene) {
     console.log("SceneEventHandlers: [Start] Handling game joined, data:", data);
 
     if (data.initial_gameboard) {
+      console.log("✅ Found initial_gameboard, calling handleInitialGameboardData");
       this.handleInitialGameboardData(data.initial_gameboard);
       // Set scene as ready to receive updates.
       this.isGameReady = true;
     } else {
-      console.warn("SceneEventHandlers: No initial gameboard data provided.");
+      console.error("❌ No initial_gameboard in data. Full data object:", data);
       this.isGameReady = false;
     }
 
