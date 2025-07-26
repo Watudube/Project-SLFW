@@ -1,45 +1,57 @@
 /**
  * Scene WebSocket Event Handlers
+ *
  * Contains all WebSocket-related event handlers for game scenes.
- * This provides clean separation between scene logic and WebSocket handling.
+ * Provides clean separation between scene logic and WebSocket handling.
  */
 
 import SceneService from "./sceneService.js";
 
 /**
- * Mixin for adding WebSocket event handling to scenes.
+ * Add WebSocket event handling methods to a scene.
  * @param {Phaser.Scene} scene - The scene to add handlers to.
  */
 export function addWebSocketHandlers(scene) {
   /**
-   * Handle successful game join and initial data.
+   * Handle successful game join and initial data from server.
    * @param {object} data - Initial game data from server.
    */
   scene.handleGameJoined = function (data) {
     console.log("SceneEventHandlers: [Start] Handling game joined, data:", data);
+
+    // Check if scene is fully created (has layers).
+    if (!this.tileLayer || !this.entityLayer) {
+      console.warn(
+        "SceneEventHandlers: Scene not fully created yet, layers missing. Deferring gameboard processing..."
+      );
+      // Store the data to process later when scene is ready.
+      this.pendingGameboardData = data;
+      return;
+    }
 
     if (data.initial_gameboard) {
       console.log("✅ Found initial_gameboard, calling handleInitialGameboardData");
       this.handleInitialGameboardData(data.initial_gameboard);
       // Set scene as ready to receive updates.
       this.isGameReady = true;
+      console.log("✅ Scene is now ready for input (isGameReady = true)");
     } else {
       console.error("❌ No initial_gameboard in data. Full data object:", data);
       this.isGameReady = false;
+      console.log("❌ Scene NOT ready for input (isGameReady = false)");
     }
 
     console.log("SceneEventHandlers: [End] Handling game joined.");
   };
 
   /**
-   * Handle game join errors.
+   * Handle game join errors from server.
    * @param {string} error - Error message from server.
    */
   scene.handleGameJoinError = function (error) {
     console.error("SceneEventHandlers: Game join failed:", error);
 
-    // TODO: Could show error UI or attempt to reconnect. For now, just log the error
-
+    // TODO: Could show error UI or attempt to reconnect.
     this.isGameReady = false;
   };
 
@@ -52,7 +64,7 @@ export function addWebSocketHandlers(scene) {
 
     this.gameboardData = gameboardData;
 
-    // Clear and render the new gameboard
+    // Clear and render the new gameboard.
     SceneService.clearWorld(this);
     SceneService.renderGameboard(this);
     SceneService.setupCamera(this);
@@ -100,9 +112,6 @@ export function addWebSocketHandlers(scene) {
       return;
     }
 
-    // TODO: Login in here are generally placeholders, for now.
-    // TODO: Add checks as needed.
-
     // Handle entities based on server data.
     if (data.entities) {
       SceneService.updateEntities(this, data.entities);
@@ -122,8 +131,8 @@ export function addWebSocketHandlers(scene) {
   };
 
   /**
-   * Handle player updates from server
-   * @param {object} data - Player update data
+   * Handle player updates from server.
+   * @param {object} data - Player update data.
    */
   scene.handlePlayerUpdate = function (data) {
     console.log("SceneEventHandlers: [Start] Processing player update, data:", data);
@@ -132,9 +141,6 @@ export function addWebSocketHandlers(scene) {
       console.warn("SceneEventHandlers: Received player update before game is ready");
       return;
     }
-
-    // TODO: Login in here are generally placeholders, for now.
-    // TODO: Add checks as needed.
 
     // Update player position and state.
     if (data.position) {
@@ -161,7 +167,7 @@ export function addWebSocketHandlers(scene) {
   scene.handlePlayerDisconnected = function (data) {
     console.log("SceneEventHandlers: [Start] Player disconnected data:", data);
 
-    // Remove disconnected player from the scene
+    // Remove disconnected player from the scene.
     if (data.player_id && this.entities.has(data.player_id)) {
       const entity = this.entities.get(data.player_id);
       if (entity.sprite) {
@@ -180,8 +186,6 @@ export function addWebSocketHandlers(scene) {
   scene.handleServerError = function (errorMessage) {
     console.error("SceneEventHandlers: Server error:", errorMessage);
 
-    // TODO: Could display error message to user. For now, just log it.
-
     // If error is critical, might need to disconnect.
     if (errorMessage.includes("authentication") || errorMessage.includes("session")) {
       this.handleCriticalError(errorMessage);
@@ -193,14 +197,11 @@ export function addWebSocketHandlers(scene) {
    */
   scene.handleConnectionError = function () {
     console.warn("SceneEventHandlers: Connection error detected!");
-
     this.isGameReady = false;
-
-    // TODO: Could show connection lost UI. For now, just flag as not ready.
   };
 
   /**
-   * Handle disconnection.
+   * Handle disconnection events.
    * @param {object} event - Disconnection event.
    */
   scene.handleDisconnection = function (event) {
@@ -208,10 +209,15 @@ export function addWebSocketHandlers(scene) {
 
     this.isGameReady = false;
 
-    // Clean up game state
+    // Clean up game state thoroughly.
     SceneService.clearWorld(this);
 
-    // Notify React layer about disconnection
+    // Reset scene state if method exists.
+    if (this.resetSceneState) {
+      this.resetSceneState();
+    }
+
+    // Notify React layer about disconnection.
     if (this.onDisconnected) {
       console.log("SceneEventHandlers: Calling onDisconnected callback...");
       this.onDisconnected(event);
@@ -223,23 +229,23 @@ export function addWebSocketHandlers(scene) {
   };
 
   /**
-   * Handle critical errors that require disconnection
-   * @param {string} errorMessage - Critical error message
+   * Handle critical errors that require disconnection.
+   * @param {string} errorMessage - Critical error message.
    */
   scene.handleCriticalError = function (errorMessage) {
     console.error("SceneEventHandlers: Critical error:", errorMessage);
 
-    // Force disconnection
+    // Force disconnection.
     if (this.game.webSocketManager) {
       this.game.webSocketManager.disconnect();
     }
 
-    // Notify React layer
+    // Notify React layer.
     if (this.onCriticalError) {
       this.onCriticalError(errorMessage);
     }
   };
 
-  // Initialize scene properties
+  // Initialize scene properties.
   scene.isGameReady = false;
 }

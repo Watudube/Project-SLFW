@@ -9,19 +9,54 @@ class SceneService {
    * @param {Phaser.Scene} scene
    */
   static clearWorld(scene) {
-    // Delete all tiles and entities from the scene's memory.
-    scene.tiles.forEach((tile) => tile.sprite?.destroy());
-    scene.entities.forEach((entity) => entity.sprite?.destroy());
+    console.log("SceneService: Clearing world...");
 
-    // Clear all collections and references.
-    scene.tiles.clear();
-    scene.entities.clear();
-    scene.tileGrid.clear();
-    if (scene.tileLayer) scene.tileLayer.clear(true, true);
-    if (scene.entityLayer) scene.entityLayer.clear(true, true);
-    scene.player = null;
+    // Delete all tiles and entities from the scene's memory.
+    if (scene.tiles) {
+      scene.tiles.forEach((tile) => {
+        if (tile.sprite) {
+          tile.sprite.destroy();
+        }
+      });
+      scene.tiles.clear();
+    }
+
+    if (scene.entities) {
+      scene.entities.forEach((entity) => {
+        if (entity.sprite) {
+          entity.sprite.destroy();
+        }
+      });
+      scene.entities.clear();
+    }
+
+    // Clear tile grid
+    if (scene.tileGrid) {
+      scene.tileGrid.clear();
+    }
+
+    // Clear and destroy layers.
+    if (scene.tileLayer) {
+      scene.tileLayer.clear(true, true);
+      scene.tileLayer.destroy();
+      scene.tileLayer = null;
+    }
+    if (scene.entityLayer) {
+      scene.entityLayer.clear(true, true);
+      scene.entityLayer.destroy();
+      scene.entityLayer = null;
+    }
+
+    // Clear player references.
+    if (scene.player) {
+      scene.player.destroy();
+      scene.player = null;
+    }
+
     scene.playerEntity = null;
     scene.playerTileId = null;
+
+    console.log("SceneService: World cleared successfully.");
   }
 
   /**
@@ -39,10 +74,18 @@ class SceneService {
     // Ensure layers exist before rendering anything
     if (!scene.tileLayer) {
       console.warn("SceneService: tileLayer not found during gameboard render, creating...");
+      if (!scene.add) {
+        console.error("SceneService: Scene.add is not available! Scene may not be fully initialized.");
+        return;
+      }
       scene.tileLayer = scene.add.group();
     }
     if (!scene.entityLayer) {
       console.warn("SceneService: entityLayer not found during gameboard render, creating...");
+      if (!scene.add) {
+        console.error("SceneService: Scene.add is not available! Scene may not be fully initialized.");
+        return;
+      }
       scene.entityLayer = scene.add.group();
     }
 

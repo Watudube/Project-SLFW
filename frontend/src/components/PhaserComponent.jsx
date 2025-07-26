@@ -1,16 +1,16 @@
-// Importing Dependencies:
+// Dependencies:
 import Phaser from "phaser";
 import { useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Importing Logic:
+// Logic:
 import OverworldScene from "../phaser/overworldScene.js";
 import WebSocketManager from "../phaser/websocketManager.js";
 
-// Importing Contexts:
+// Contexts:
 import { UserContext } from "../contexts/UserContext.jsx";
 
-// Importing Styles:
+// Styles:
 import "./PhaserComponent.css";
 
 export default function PhaserComponent() {
@@ -28,63 +28,68 @@ export default function PhaserComponent() {
       return;
     }
 
-    // Create Phaser game instance if it doesn't exist.
-    if (!gameRef.current) {
-      console.log("Creating Phaser game instance...");
-
-      // Get container dimensions:
-      const width = containerRef.current.offsetWidth;
-      const height = containerRef.current.offsetHeight;
-
-      // Phaser configuration for the game instance.
-      const PhaserConfig = {
-        type: Phaser.AUTO, // Automatically choose WebGL or Canvas.
-        parent: containerRef.current,
-        width,
-        height,
-        scene: [OverworldScene], // TODO: Add other scenes as needed.
-        physics: {
-          default: "arcade",
-          arcade: {
-            gravity: { y: 0 },
-            debug: false,
-          },
-        },
-        render: {
-          pixelArt: true,
-          antialias: false,
-        },
-        scale: {
-          mode: Phaser.Scale.RESIZE,
-          autoCenter: Phaser.Scale.CENTER_BOTH,
-        },
-      };
-
-      // Create the Phaser game instance:
-      gameRef.current = new Phaser.Game(PhaserConfig);
-
-      // Store React callbacks on game instance for scenes to access
-      gameRef.current.reactCallbacks = {
-        onDisconnected: (disconnectData) => {
-          console.log("WebSocket disconnected, logging out user...", disconnectData);
-
-          // Always force logout
-          forceLogout("websocket_disconnect");
-          navigate("/");
-        },
-        onCriticalError: (errorMessage) => {
-          console.log("Critical error occurred:", errorMessage);
-          forceLogout("critical_error");
-          navigate("/");
-        },
-      };
-
-      // Add WebSocket manager to the game:
-      gameRef.current.webSocketManager = new WebSocketManager(gameRef.current);
-
-      // Connect to WebSocket
-      gameRef.current.webSocketManager.connect(userToken);
+    // Always destroy existing game instance before creating a new one
+    if (gameRef.current) {
+      console.log("Destroying existing Phaser game instance for re-login...");
+      gameRef.current.destroy(true);
+      gameRef.current = null;
     }
+
+    // Create Phaser game instance
+    console.log("Creating new Phaser game instance...");
+
+    // Get container dimensions:
+    const width = containerRef.current.offsetWidth;
+    const height = containerRef.current.offsetHeight;
+
+    // Phaser configuration for the game instance.
+    const PhaserConfig = {
+      type: Phaser.AUTO, // Automatically choose WebGL or Canvas.
+      parent: containerRef.current,
+      width,
+      height,
+      scene: [OverworldScene], // TODO: Add other scenes as needed.
+      physics: {
+        default: "arcade",
+        arcade: {
+          gravity: { y: 0 },
+          debug: false,
+        },
+      },
+      render: {
+        pixelArt: true,
+        antialias: false,
+      },
+      scale: {
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+      },
+    };
+
+    // Create the Phaser game instance:
+    gameRef.current = new Phaser.Game(PhaserConfig);
+
+    // Store React callbacks on game instance for scenes to access
+    gameRef.current.reactCallbacks = {
+      onDisconnected: (disconnectData) => {
+        console.log("WebSocket disconnected, logging out user...", disconnectData);
+
+        // Always force logout
+        forceLogout("websocket_disconnect");
+        navigate("/");
+      },
+      onCriticalError: (errorMessage) => {
+        console.log("Critical error occurred:", errorMessage);
+        forceLogout("critical_error");
+        navigate("/");
+      },
+    };
+
+    // Add WebSocket manager to the game:
+    gameRef.current.webSocketManager = new WebSocketManager(gameRef.current);
+
+    // Connect to WebSocket
+    gameRef.current.webSocketManager.connect(userToken);
 
     // Cleanup function to disconnect WebSocket instance on unmount.
     return () => {
@@ -92,6 +97,13 @@ export default function PhaserComponent() {
 
       if (gameRef.current?.webSocketManager) {
         gameRef.current.webSocketManager.disconnect();
+      }
+
+      // Destroy game instance when userToken changes (logout/login)
+      if (gameRef.current) {
+        console.log("Destroying Phaser game instance due to token change...");
+        gameRef.current.destroy(true);
+        gameRef.current = null;
       }
     };
   }, [userToken, forceLogout, navigate]);
@@ -108,12 +120,17 @@ export default function PhaserComponent() {
 
     window.addEventListener("resize", handleResize); // "resize" is a native browser event.
 
-    // Cleanup function to remove resize listener and destroy game instance.
+    // Cleanup function to remove resize listener only
     return () => {
       window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
+  // Effect to handle component unmount - final cleanup
+  useEffect(() => {
+    return () => {
       if (gameRef.current) {
-        console.log("Destroying Phaser game instance...");
+        console.log("Final cleanup: Destroying Phaser game instance...");
         gameRef.current.destroy(true);
         gameRef.current = null;
       }
