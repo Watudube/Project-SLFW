@@ -38,3 +38,10 @@ class BaseService(Generic[M, R]):
     
     def list(self) -> list[M]:
         return self.repo.get_all()
+    
+    def commit_and_refresh(self, instance: M) -> None:
+        try:
+            self.repo.commit_and_refresh(instance)
+        except Exception as e:
+            self.db.rollback()
+            raise ValueError(f"Failed to commit instance {instance}")

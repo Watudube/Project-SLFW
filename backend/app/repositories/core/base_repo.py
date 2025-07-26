@@ -24,3 +24,7 @@ class BaseRepository(Generic[M]):
     
     def get_all(self) -> list[M]:
         return self.db.query(self.model).all()
+    
+    def commit_and_refresh(self, instance: M) -> None:
+        self.db.commit()
+        self.db.refresh(instance)
