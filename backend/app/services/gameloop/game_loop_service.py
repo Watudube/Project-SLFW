@@ -21,7 +21,7 @@ class GameLoopService:
             self.gameboard_service.set_gameboard(gameboard)
 
     async def start(self):
-        self.gameboard_service.delete_gameboard()
+        # self.gameboard_service.delete_gameboard()
         self.setup_gameboard()
         while True:
             # await self.world_update()
