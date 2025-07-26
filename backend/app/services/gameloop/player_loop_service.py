@@ -2,6 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import WebSocket
 from app.websockets.manager import ConnectionManager
 from app.services.humans.player_service import PlayerService
+from app.services.core.level_service import LevelService
 from app.services.core.tile_service import TileService
 from app.schemas.core.tile_schema import PerceptionOut
 from app.models.core.tile import Tile
@@ -14,6 +15,7 @@ class PlayerLoopService:
         self.ws = ws
         self.manager = manager
         self.player_service = PlayerService(self.db)
+        self.level_service = LevelService(self.db)
         self.tile_service = TileService(self.db)
         self.username = None
 
@@ -90,3 +92,19 @@ class PlayerLoopService:
                     },
                     self.ws
                 )
+    
+    async def move_player_offline(self) -> None:
+        """
+        When a player disconnects, move them to a designated tile
+        Currently assuming the designated tile is on ground level (z_index=0)
+        at length+100, width+100
+        """
+        player = self.player_service.get_player(self.username)
+        current_tile: Tile = player.tile
+        level = self.level_service.get_empty_base_level()
+        target_tile = self.tile_service.get_empty_tile_with_coords(level.id, level.length + 100, level.width + 100)
+        if not target_tile:
+            raise ValueError("Failed to find target tile for offline player")
+        player.tile_id = target_tile.id
+        player.relog_tile_id = current_tile.id
+        self.player_service.commit_and_refresh(player)
