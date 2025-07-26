@@ -1,19 +1,21 @@
-// Importing Dependencies:
+// Dependencies:
 import React, { createContext, useState, useEffect, useCallback } from "react";
 import { apiService } from "../services/apiService";
 
 /**
- * Context to store user state. Context loads with App.jsx,
- * accessaibile to all other components under its branch structure.
- * Contains:
- * - userToken: User authentication token, originating from backend.
- * - isLoading: Loading state for user data.
- * - setUserToken: Function to update user token.
- * - setIsLoading: Function to update loading state.
- * - login: Function to authenticate user with username and password.
- * - createAccount: Function to create a new user account.
- * - logout: Function to clear user data and token.
- * - forceLogout: Function to forcibly log out the user (e.g., on disconnection).
+ * User Context
+ *
+ * Global user state management context accessible to all components.
+ *
+ * Provides:
+ * - userToken: User authentication token from backend
+ * - isLoading: Loading state for user data
+ * - setUserToken: Function to update user token
+ * - setIsLoading: Function to update loading state
+ * - login: Function to authenticate user with credentials
+ * - createAccount: Function to create a new user account
+ * - logout: Function to clear user data and token
+ * - forceLogout: Function to forcibly log out user (e.g., on disconnection)
  */
 const UserContext = createContext();
 
@@ -25,6 +27,8 @@ function UserProvider({ children }) {
 
   /**
    * Login with username and password.
+   * @param {object} credentials - User login credentials.
+   * @returns {Promise<boolean>} - Success status.
    */
   const login = useCallback(async (credentials) => {
     try {
@@ -35,14 +39,14 @@ function UserProvider({ children }) {
 
       setUserToken(response.token);
 
-      // Store token in sessionStorage for persistence
+      // Store token in sessionStorage for persistence.
       sessionStorage.setItem("userToken", response.token);
       console.log("Login successful:", response);
 
       return response;
     } catch (error) {
       console.error("Login failed:", error);
-      throw error; // Re-throw so components can handle the error
+      throw error; // Re-throw so components can handle the error.
     } finally {
       setIsLoading(false);
     }
@@ -50,6 +54,8 @@ function UserProvider({ children }) {
 
   /**
    * Create a new user account.
+   * @param {object} credentials - User registration credentials.
+   * @returns {Promise<object>} - Registration response.
    */
   const createAccount = useCallback(async (credentials) => {
     try {
@@ -60,14 +66,14 @@ function UserProvider({ children }) {
 
       setUserToken(response.token);
 
-      // Store token in sessionStorage for persistence
+      // Store token in sessionStorage for persistence.
       sessionStorage.setItem("userToken", response.token);
       console.log("Account creation successful:", response);
 
       return response;
     } catch (error) {
       console.error("Account creation failed:", error);
-      throw error; // Re-throw so components can handle the error
+      throw error; // Re-throw so components can handle the error.
     } finally {
       setIsLoading(false);
     }
@@ -84,8 +90,8 @@ function UserProvider({ children }) {
   }, [userToken]);
 
   /**
-   * Force logout (used for disconnections, session expiry, etc.)
-   * This is the same as logout but with different logging for debugging.
+   * Force logout for disconnections, session expiry, etc.
+   * @param {string} reason - Reason for forced logout.
    */
   const forceLogout = useCallback(
     (reason = "unknown") => {
@@ -107,7 +113,7 @@ function UserProvider({ children }) {
       setUserToken(savedToken);
       setIsLoading(false);
     } else {
-      // No saved token, stay on login page
+      // No saved token, stay on login page.
       setIsLoading(false);
     }
   }, []);

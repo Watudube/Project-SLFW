@@ -1,14 +1,13 @@
-// Importing Dependencies:
+// Dependencies:
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
-// Importing Components:
+// Components:
 import App from "./App.jsx";
 
-// Importing Styles:
+// Styles:
 import "./main.css";
 
-createRoot(document.getElementById("root")).render(
-  // Removed the default strict mode wrapper for simplicity and phaser.
-  <App />
-);
+// Render the main application.
+// Note: StrictMode is removed for compatibility with Phaser.
+createRoot(document.getElementById("root")).render(<App />);

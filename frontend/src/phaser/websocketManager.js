@@ -1,11 +1,12 @@
-// Importing Constants:
+// Constants:
 import { WEBSOCKET_BASEURL } from "../services/endpointURLs.js";
 
-// Importing Message Handlers:
+// Message Handlers:
 import { handleIncomingMessage } from "./websocketMessageHandler.js";
 
 /**
- * WebSocket Manager for Phaser Game.
+ * WebSocket Manager for Phaser Game
+ *
  * Handles all WebSocket communication from within the Phaser game context.
  */
 class WebSocketManager {
@@ -17,9 +18,9 @@ class WebSocketManager {
   }
 
   /**
-   * Connect to WebSocket server
-   * @param {string} userToken - User authentication token
-   * @param {string} url - WebSocket server URL (optional)
+   * Connect to WebSocket server.
+   * @param {string} userToken - User authentication token.
+   * @param {string} url - WebSocket server URL (optional).
    */
   connect(userToken, url = WEBSOCKET_BASEURL) {
     if (this.isConnected || this.socket) {

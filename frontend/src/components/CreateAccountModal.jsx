@@ -1,17 +1,21 @@
-// Importing Dependencies:
+// Dependencies:
 import { useState, useContext } from "react";
 
-// Importing Contexts:
+// Contexts:
 import { UserContext } from "../contexts/UserContext";
 
-// Importing Styles:
+// Styles:
 import "./CreateAccountModal.css";
 
 /**
- * Modal component for creating a new user account.
- * @param {Object} props - Component props
- * @param {boolean} props.isOpen - Whether the modal is open
- * @param {function} props.onClose - Function to close the modal
+ * Create Account Modal Component
+ *
+ * Modal component for creating a new user account with form validation.
+ *
+ * @param {Object} props - Component props.
+ * @param {boolean} props.isOpen - Whether the modal is open.
+ * @param {Function} props.onClose - Function to close the modal.
+ * @returns {JSX.Element} Create account modal component.
  */
 export default function CreateAccountModal({ isOpen, onClose }) {
   const { createAccount, isLoading } = useContext(UserContext);
@@ -25,7 +29,8 @@ export default function CreateAccountModal({ isOpen, onClose }) {
   const [errors, setErrors] = useState({});
 
   /**
-   * Handle input changes in the form
+   * Handle input changes in the form.
+   * @param {Event} e - Input change event.
    */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -34,7 +39,7 @@ export default function CreateAccountModal({ isOpen, onClose }) {
       [name]: value,
     }));
 
-    // Clear error for this field when user starts typing
+    // Clear error for this field when user starts typing.
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -44,7 +49,8 @@ export default function CreateAccountModal({ isOpen, onClose }) {
   };
 
   /**
-   * Validate form data before submission
+   * Validate form data before submission.
+   * @returns {boolean} - True if form is valid, false otherwise.
    */
   const validateForm = () => {
     const newErrors = {};
@@ -72,7 +78,8 @@ export default function CreateAccountModal({ isOpen, onClose }) {
   };
 
   /**
-   * Handle form submission
+   * Handle form submission.
+   * @param {Event} e - Form submit event.
    */
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -87,12 +94,12 @@ export default function CreateAccountModal({ isOpen, onClose }) {
         password: formData.password,
       });
 
-      // Close modal and reset form on success
+      // Close modal and reset form on success.
       setFormData({ username: "", password: "", confirmPassword: "" });
       setErrors({});
       onClose();
     } catch (error) {
-      // Handle specific error cases
+      // Handle specific error cases.
       if (error.message.includes("Username already exists")) {
         setErrors({ username: "Username already exists" });
       } else {
@@ -102,7 +109,7 @@ export default function CreateAccountModal({ isOpen, onClose }) {
   };
 
   /**
-   * Handle modal close
+   * Handle modal close and reset form.
    */
   const handleClose = () => {
     setFormData({ username: "", password: "", confirmPassword: "" });
@@ -110,7 +117,7 @@ export default function CreateAccountModal({ isOpen, onClose }) {
     onClose();
   };
 
-  // Don't render if modal is not open
+  // Don't render if modal is not open.
   if (!isOpen) return null;
 
   return (

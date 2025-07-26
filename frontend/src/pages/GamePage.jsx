@@ -1,42 +1,45 @@
-// Importing Dependencies:
+// Dependencies:
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Importing Components:
+// Components:
 import PhaserComponent from "../components/PhaserComponent";
 
-// Importing Contexts:
+// Contexts:
 import { UserContext } from "../contexts/UserContext";
 
-// Importing Styles:
+// Styles:
 import "./GamePage.css";
 
 /**
- * Represents the Game Page of the application, which serves as the main entry point for users.
- * @returns Home Page Component
+ * Game Page Component
+ *
+ * Main game interface where users play the game.
+ * Contains the Phaser game component and logout functionality.
+ *
+ * @returns {JSX.Element} Game page component.
  */
 export default function GamePage() {
-  // Subscribing to User Context (changes to context states should trigger re-render):
+  // Subscribe to User Context (changes to context states should trigger re-render).
   const { isLoading, logout } = useContext(UserContext);
   const navigate = useNavigate();
 
   console.log("GamePage mounting...");
 
   /**
-   * Handles user logout by clearing user data and navigating to the home page.
-   * @returns {void}
+   * Handle user logout by clearing user data and navigating to home page.
    */
   const handleLogout = () => {
     logout(); // Clear user data from context and session storage.
     navigate("/"); // Navigate out of the GamePage.
   };
 
-  // If still loading user data, show loading state:
+  // If still loading user data, show loading state.
   if (isLoading) {
     return <div className="loading-container">Loading user data...</div>;
   }
 
-  // The main game page content:
+  // The main game page content.
   return (
     <div className="game-page-container">
       <div className="game-title-container">

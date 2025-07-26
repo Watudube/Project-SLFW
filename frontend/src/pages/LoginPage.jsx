@@ -1,14 +1,14 @@
-// Importing Dependencies:
+// Dependencies:
 import { useEffect, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Importing Components:
+// Components:
 import CreateAccountModal from "../components/CreateAccountModal";
 
-// Importing Contexts:
+// Contexts:
 import { UserContext } from "../contexts/UserContext";
 
-// Importing Styles:
+// Styles:
 import "./LoginPage.css";
 
 export default function LoginPage() {
@@ -23,7 +23,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Redirect to game if user is already logged in
+  // Redirect to game if user is already logged in.
   useEffect(() => {
     if (userToken && !isLoading) {
       navigate("/game");
@@ -31,7 +31,8 @@ export default function LoginPage() {
   }, [userToken, isLoading, navigate]);
 
   /**
-   * Handle input changes
+   * Handle input field changes.
+   * @param {Event} e - Input change event.
    */
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -40,7 +41,7 @@ export default function LoginPage() {
       [name]: value,
     }));
 
-    // Clear error for this field when user starts typing
+    // Clear error for this field when user starts typing.
     if (errors[name]) {
       setErrors((prev) => ({
         ...prev,
@@ -50,7 +51,8 @@ export default function LoginPage() {
   };
 
   /**
-   * Validate login form
+   * Validate the login form.
+   * @returns {boolean} - True if form is valid, false otherwise.
    */
   const validateForm = () => {
     const newErrors = {};
@@ -69,7 +71,8 @@ export default function LoginPage() {
   };
 
   /**
-   * Handle login form submission
+   * Handle login form submission.
+   * @param {Event} e - Form submit event.
    */
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -91,7 +94,8 @@ export default function LoginPage() {
   };
 
   /**
-   * Handle create account link click
+   * Handle create account link click.
+   * @param {Event} e - Click event.
    */
   const handleCreateAccountClick = (e) => {
     e.preventDefault();
@@ -99,7 +103,7 @@ export default function LoginPage() {
   };
 
   /**
-   * Handle modal close
+   * Handle modal close.
    */
   const handleModalClose = () => {
     setIsModalOpen(false);

@@ -1,13 +1,14 @@
 /**
  * WebSocket Message Handler
+ *
  * Handles incoming WebSocket messages and routes them to appropriate scenes.
- * This provides clean separation between WebSocket communication and scene logic.
+ * Provides clean separation between WebSocket communication and scene logic.
  */
 
 /**
- * Handle incoming WebSocket messages
- * @param {Phaser.Game} game - Phaser game instance
- * @param {object} message - Parsed message from server
+ * Handle incoming WebSocket messages.
+ * @param {Phaser.Game} game - Phaser game instance.
+ * @param {object} message - Parsed message from server.
  */
 export function handleIncomingMessage(game, message) {
   const { type, data, status, error } = message;
@@ -45,19 +46,24 @@ export function handleIncomingMessage(game, message) {
 }
 
 /**
- * Handle game join response
- * @param {Phaser.Game} game
- * @param {object} response
+ * Handle game join response from server.
+ * @param {Phaser.Game} game - Phaser game instance.
+ * @param {object} response - Server response containing status, data, and error.
  */
 function handleGameJoinResponse(game, response) {
+  console.log("WebSocketMessageHandler: Processing game join response:", response);
+
   const scene = game.scene.getScene("OVERWORLD_SCENE");
+  console.log("WebSocketMessageHandler: Found scene:", !!scene);
 
   if (response.status === "success") {
     console.log("WebSocketMessageHandler: Game join successful");
     if (scene && scene.handleGameJoined) {
+      console.log("WebSocketMessageHandler: Calling scene.handleGameJoined");
       scene.handleGameJoined(response.data);
     } else {
       console.warn("WebSocketMessageHandler: No scene found to handle game joined. Scene:", scene);
+      console.warn("WebSocketMessageHandler: Scene has handleGameJoined method:", !!(scene && scene.handleGameJoined));
     }
   } else {
     console.error("WebSocketMessageHandler: Game join failed:", response.error);
@@ -68,9 +74,9 @@ function handleGameJoinResponse(game, response) {
 }
 
 /**
- * Handle world updates
- * @param {Phaser.Game} game
- * @param {object} data
+ * Handle world updates from server.
+ * @param {Phaser.Game} game - Phaser game instance.
+ * @param {object} data - World update data.
  */
 function handleWorldUpdate(game, data) {
   const scene = game.scene.getScene("OVERWORLD_SCENE");
@@ -80,9 +86,9 @@ function handleWorldUpdate(game, data) {
 }
 
 /**
- * Handle entity updates
- * @param {Phaser.Game} game
- * @param {object} data
+ * Handle entity updates from server.
+ * @param {Phaser.Game} game - Phaser game instance.
+ * @param {object} data - Entity update data.
  */
 function handleEntityUpdate(game, data) {
   const scene = game.scene.getScene("OVERWORLD_SCENE");
@@ -92,9 +98,9 @@ function handleEntityUpdate(game, data) {
 }
 
 /**
- * Handle player updates
- * @param {Phaser.Game} game
- * @param {object} data
+ * Handle player updates from server.
+ * @param {Phaser.Game} game - Phaser game instance.
+ * @param {object} data - Player update data.
  */
 function handlePlayerUpdate(game, data) {
   const scene = game.scene.getScene("OVERWORLD_SCENE");
@@ -104,14 +110,14 @@ function handlePlayerUpdate(game, data) {
 }
 
 /**
- * Handle player disconnection
- * @param {Phaser.Game} game
- * @param {object} data
+ * Handle player disconnection notifications.
+ * @param {Phaser.Game} game - Phaser game instance.
+ * @param {object} data - Disconnection data.
  */
 function handlePlayerDisconnected(game, data) {
   console.log("WebSocketMessageHandler: Player disconnected:", data);
 
-  // Notify all relevant scenes
+  // Notify all relevant scenes.
   game.scene.scenes.forEach((scene) => {
     if (scene.handlePlayerDisconnected) {
       scene.handlePlayerDisconnected(data);
@@ -120,14 +126,14 @@ function handlePlayerDisconnected(game, data) {
 }
 
 /**
- * Handle server errors
- * @param {Phaser.Game} game
- * @param {string} errorMessage
+ * Handle server error messages.
+ * @param {Phaser.Game} game - Phaser game instance.
+ * @param {string} errorMessage - Error message from server.
  */
 function handleServerError(game, errorMessage) {
   console.error("WebSocketMessageHandler: Server error:", errorMessage);
 
-  // Notify all scenes about the error
+  // Notify all scenes about the error.
   game.scene.scenes.forEach((scene) => {
     if (scene.handleServerError) {
       scene.handleServerError(errorMessage);
