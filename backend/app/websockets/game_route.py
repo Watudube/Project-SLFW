@@ -28,6 +28,14 @@ async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
 
             token = message.get("userToken")
             if not token or not manager.validate_token(token, ws):
+                await manager.send(
+                    {
+                        "type": "authentication_response",
+                        "error": {f"Supplied an invalid token: {token}"},
+                        "status": "error",
+                    },
+                    ws,
+                )
                 await ws.close(code=1008, reason="Invalid token")
                 return
             
