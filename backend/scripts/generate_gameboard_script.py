@@ -1,5 +1,5 @@
 import json
-
+import os
 
 def generate_gameboard_json():
     """
@@ -43,22 +43,22 @@ def generate_gameboard_json():
                 "y_coord": y,
                 "type": "wall" if is_wall else "floor",
                 "is_wall": is_wall,
-                "sprite": "wall_stone.png" if is_wall else "floor_grass.png",
+                "sprite": "tile_wall_single" if is_wall else "tile_grass_01",
                 "speed": 0 if is_wall else 1,
                 "entities": []
             }
             
             # Add player entity on tile (7,7)
-            if x == 7 and y == 7:
-                player_entity = {
-                    "id": 101,
-                    "tile_id": tile_id,
-                    "name": "Player",
-                    "label": "Player Character",
-                    "description": "The main character controlled by the player",
-                    "sprite": "player_human.png"
-                }
-                tile["entities"].append(player_entity)
+            # if x == 7 and y == 7:
+            #     player_entity = {
+            #         "id": 101,
+            #         "tile_id": tile_id,
+            #         "type": "player",
+            #         "label": "Player Character",
+            #         "description": "The main character controlled by the player",
+            #         "sprite": "player_human.png"
+            #     }
+            #     tile["entities"].append(player_entity)
             
             tiles.append(tile)
             tile_id += 1
@@ -68,13 +68,17 @@ def generate_gameboard_json():
     
     return gameboard
 
-def save_gameboard_to_file(filename="gameboard_16x16.json"):
+def save_gameboard_to_file(filename=None):
     """Generate and save the gameboard to a JSON file"""
+    if filename is None:
+        # Always save to backend/assets/gameboard_16x16.json relative to this script
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        assets_path = os.path.join(script_dir, "../assets/gameboard_16x16.json")
+        filename = os.path.normpath(assets_path)
     gameboard = generate_gameboard_json()
-    
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(gameboard, f, indent=2, ensure_ascii=False)
-    
     print(f"Gameboard JSON saved to {filename}")
     print(f"Total tiles: {len(gameboard['levels'][0]['tiles'])}")
     
