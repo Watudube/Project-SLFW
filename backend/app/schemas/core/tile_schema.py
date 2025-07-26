@@ -1,6 +1,6 @@
 from .base_schema import BaseOut, BaseIn
 from typing import Any
-from pydantic import Field
+from pydantic import BaseModel, Field
 from app.utils.entity_union_schema import UnionEntityOut
 
 class TileOut(BaseOut):
@@ -28,3 +28,6 @@ class TileIn(BaseIn):
     sprite: str
     speed: int
     entities: list[dict[str, Any]] = Field(default_factory=list)
+
+class PerceptionOut(BaseModel):
+    tiles: list[TileOut]
