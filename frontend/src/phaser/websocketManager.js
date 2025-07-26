@@ -14,9 +14,6 @@ class WebSocketManager {
     this.socket = null;
     this.isConnected = false;
     this.userToken = null;
-    this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 3;
-    this.reconnectDelay = 1000; // Start with 1 second
   }
 
   /**
@@ -51,7 +48,6 @@ class WebSocketManager {
     this.socket.onopen = () => {
       console.log("WebSocketManager: Connection established");
       this.isConnected = true;
-      this.reconnectAttempts = 0;
 
       // Join game session
       this.sendMessage({
@@ -75,14 +71,17 @@ class WebSocketManager {
     this.socket.onclose = (event) => {
       console.log("WebSocketManager: Connection closed", event.code, event.reason);
       this.isConnected = false;
+
+      // Don't handle disconnection if we already handled it in disconnect()
+      if (event.reason === "User initiated disconnect") {
+        this.socket = null;
+        return;
+      }
+
       this.socket = null;
 
-      // Handle reconnection if not a normal closure
-      if (event.code !== 1000 && this.reconnectAttempts < this.maxReconnectAttempts) {
-        this.attemptReconnect();
-      } else {
-        this.handleDisconnection(event);
-      }
+      // Always handle disconnection - no reconnection attempts
+      this.handleDisconnection(event);
     };
 
     this.socket.onerror = (error) => {
@@ -125,24 +124,6 @@ class WebSocketManager {
   }
 
   /**
-   * Attempt to reconnect to the server
-   */
-  attemptReconnect() {
-    this.reconnectAttempts++;
-    const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1); // Exponential backoff
-
-    console.log(
-      `WebSocketManager: Attempting reconnect ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay}ms`
-    );
-
-    setTimeout(() => {
-      if (this.userToken) {
-        this.connect(this.userToken);
-      }
-    }, delay);
-  }
-
-  /**
    * Handle connection errors
    */
   handleConnectionError() {
@@ -157,11 +138,12 @@ class WebSocketManager {
    * Handle disconnection (when reconnection fails or is not attempted)
    */
   handleDisconnection(event) {
-    console.log("WebSocketManager: Handling final disconnection");
+    console.log("WebSocketManager: Handling final disconnection", event);
 
     // Notify all scenes about disconnection
     this.game.scene.scenes.forEach((scene) => {
       if (scene.handleDisconnection) {
+        console.log("WebSocketManager: Notifying scene about disconnection:", scene.scene.key);
         scene.handleDisconnection(event);
       }
     });
@@ -176,11 +158,16 @@ class WebSocketManager {
   disconnect() {
     if (this.socket) {
       this.isConnected = false;
+
+      // Call handleDisconnection BEFORE closing to ensure React callbacks work
+      this.handleDisconnection({ code: 1000, reason: "User initiated disconnect", wasUserInitiated: true });
+
       this.socket.close(1000, "User initiated disconnect");
       this.socket = null;
     }
+
+    // Clear user token as part of cleanup
     this.userToken = null;
-    this.reconnectAttempts = 0;
   }
 
   /**
@@ -201,7 +188,6 @@ class WebSocketManager {
       hasSocket: !!this.socket,
       socketState: this.socket ? this.socket.readyState : null,
       hasUserToken: !!this.userToken,
-      reconnectAttempts: this.reconnectAttempts,
     };
   }
 }
