@@ -21,10 +21,10 @@ class LevelService(BaseService[Level, LevelRepository]):
             raise ValueError(f"Level with ID: {level_id} does not exist")
         return level
     
-    def get_empty_level_with_index(self, z_index: int) -> Level:
-        empty_level = self.repo.get_empty_level_with_index(z_index)
+    def get_empty_base_level(self) -> Level:
+        empty_level = self.repo.get_empty_level_with_index(0)
         if not empty_level:
-            raise ValueError(f"Level with z_index: {z_index} does not exist")
+            raise ValueError(f"Level with z_index: 0 does not exist")
         return empty_level
     
     def get_dimensions(self, level_id: int) -> tuple[int, int]:
