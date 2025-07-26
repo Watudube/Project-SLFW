@@ -5,9 +5,15 @@ import { apiService } from "../services/apiService";
 /**
  * Context to store user state. Context loads with App.jsx,
  * accessaibile to all other components under its branch structure.
- * Contains (WIP):
+ * Contains:
  * - userToken: User authentication token, originating from backend.
  * - isLoading: Loading state for user data.
+ * - setUserToken: Function to update user token.
+ * - setIsLoading: Function to update loading state.
+ * - login: Function to authenticate user with username and password.
+ * - createAccount: Function to create a new user account.
+ * - logout: Function to clear user data and token.
+ * - forceLogout: Function to forcibly log out the user (e.g., on disconnection).
  */
 const UserContext = createContext();
 
@@ -81,13 +87,16 @@ function UserProvider({ children }) {
    * Force logout (used for disconnections, session expiry, etc.)
    * This is the same as logout but with different logging for debugging.
    */
-  const forceLogout = useCallback((reason = "unknown") => {
-    console.log(`Force logout triggered. Reason: ${reason}`);
-    console.log(`Logging out user with token: ${userToken}...`);
-    setUserToken(null);
-    sessionStorage.removeItem("userToken");
-    console.log("User force logged out.");
-  }, [userToken]);
+  const forceLogout = useCallback(
+    (reason = "unknown") => {
+      console.log(`Force logout triggered. Reason: ${reason}`);
+      console.log(`Logging out user with token: ${userToken}...`);
+      setUserToken(null);
+      sessionStorage.removeItem("userToken");
+      console.log("User force logged out.");
+    },
+    [userToken]
+  );
 
   /**
    * Check for existing token on app start.
