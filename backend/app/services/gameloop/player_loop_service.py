@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import WebSocket
 from app.websockets.manager import ConnectionManager
 from app.services.humans.player_service import PlayerService
-from app.schemas.core.level_schema import LevelOut
+from app.schemas.core.tile_schema import PerceptionOut
 
 import asyncio
 
@@ -14,14 +14,18 @@ class PlayerLoopService:
         self.player_service = PlayerService(self.db)
 
     async def start(self, username: str):
+        self.player_service.create_player_if_not_exists({"username": username})
         while True:
+            await asyncio.sleep(10)
             await self.send_player_perception(username)
-            await asyncio.sleep(5)
     
     async def send_player_perception(self, username: str):
         try:
             player_perception = self.player_service.get_player_perception(username)
-            level_segment = LevelOut.model_validate(player_perception)
+            print(player_perception)
+            print("working")
+            level_segment = PerceptionOut.model_validate({"tiles": player_perception})
+            print("Not haha")
 
             await self.manager.send(
                 {
