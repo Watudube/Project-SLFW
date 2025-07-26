@@ -2824,6 +2824,17 @@
           "sprite": "tile_wall_single",
           "speed": 0,
           "entities": []
+        },
+        {
+          "id": -1,
+          "level_id": 1,
+          "x_coord": 116,
+          "y_coord": 116,
+          "type": "floor",
+          "is_wall": false,
+          "sprite": "tile_grass_01",
+          "speed": 0,
+          "entities": []
         }
       ]
     }
