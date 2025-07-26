@@ -22,10 +22,7 @@ class PlayerLoopService:
     async def send_player_perception(self, username: str):
         try:
             player_perception = self.player_service.get_player_perception(username)
-            print(player_perception)
-            print("working")
             level_segment = PerceptionOut.model_validate({"tiles": player_perception})
-            print("Not haha")
 
             await self.manager.send(
                 {
