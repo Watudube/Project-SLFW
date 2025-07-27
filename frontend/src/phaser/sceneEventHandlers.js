@@ -161,6 +161,25 @@ export function addWebSocketHandlers(scene) {
   };
 
   /**
+   * Handle perception updates from server.
+   * @param {object} data - Perception update data containing tiles within player's perception radius.
+   */
+  scene.handlePerceptionUpdate = function (data) {
+    console.log("SceneEventHandlers: [Start] Processing perception update, data:", data);
+
+    if (!this.isGameReady) {
+      console.warn("SceneEventHandlers: Received perception update before game is ready");
+      return;
+    }
+
+    if (data.perception && data.perception.tiles) {
+      SceneService.updatePerceptionArea(this, data.perception.tiles);
+    }
+
+    console.log("SceneEventHandlers: [End] Processing perception update.");
+  };
+
+  /**
    * Handle player disconnection events.
    * @param {object} data - Disconnection data.
    */

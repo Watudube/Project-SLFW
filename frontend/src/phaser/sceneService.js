@@ -99,8 +99,7 @@ class SceneService {
 
     level.tiles.forEach((tile) => SceneService.renderTile(scene, tile));
 
-    // TODO:  Need to add logic to only render entities the player can see.
-    //        For now, we render all entities in the first level.
+    // Render all entities but keep them hidden - they will be shown via perception updates
     level.tiles.forEach((tile) => {
       if (tile.entities && tile.entities.length > 0) {
         tile.entities.forEach((entity) => SceneService.renderEntity(scene, entity, tile));
@@ -141,6 +140,8 @@ class SceneService {
     const tileSprite = scene.add.image(x, y, spriteKey);
     tileSprite.setOrigin(0, 0);
     tileSprite.setDisplaySize(scene.tileSize, scene.tileSize);
+    // Hide tiles by default - they will be shown via perception updates
+    tileSprite.setVisible(false);
     scene.tileLayer.add(tileSprite);
 
     scene.tiles.set(tileData.id, { sprite: tileSprite, data: tileData });
@@ -169,6 +170,8 @@ class SceneService {
     const y = tileData.y_coord * scene.tileSize + scene.tileSize / 2;
     const entitySprite = scene.add.image(x, y, entityData.sprite);
     entitySprite.setOrigin(0.5, 0.5);
+    // Hide entities by default - they will be shown via perception updates
+    entitySprite.setVisible(false);
     scene.entityLayer.add(entitySprite);
 
     scene.entities.set(entityData.id, { sprite: entitySprite, data: entityData, tileId: tileData.id });
@@ -360,6 +363,109 @@ class SceneService {
       SceneService.renderGameboard(scene);
       SceneService.setupCamera(scene);
     }
+  }
+
+  /**
+   * Update perception area with tiles from perception update
+   * @param {Phaser.Scene} scene
+   * @param {Array} perceptionTiles - Array of tiles within player's perception radius
+   */
+  static updatePerceptionArea(scene, perceptionTiles) {
+    console.log("SceneService: Updating perception area with", perceptionTiles.length, "tiles");
+
+    // Create a set of currently visible tile IDs for efficient lookup
+    const visibleTileIds = new Set(perceptionTiles.map(tile => tile.id));
+
+    // Hide/show tiles based on perception
+    scene.tiles.forEach((tileInfo, tileId) => {
+      if (tileInfo.sprite) {
+        // Show tile if it's in perception, hide if not
+        tileInfo.sprite.setVisible(visibleTileIds.has(tileId));
+      }
+    });
+
+    // Hide/show entities based on their tile's visibility
+    scene.entities.forEach((entityInfo, entityId) => {
+      if (entityInfo.sprite && entityInfo.tileId) {
+        // Show entity if its tile is in perception, hide if not
+        entityInfo.sprite.setVisible(visibleTileIds.has(entityInfo.tileId));
+      }
+    });
+
+    // Update tile data with fresh perception data
+    perceptionTiles.forEach((tileData) => {
+      if (scene.tiles.has(tileData.id)) {
+        // Update existing tile data
+        const tileInfo = scene.tiles.get(tileData.id);
+        tileInfo.data = { ...tileInfo.data, ...tileData };
+        
+        // Update entities on this tile
+        if (tileData.entities && tileData.entities.length > 0) {
+          SceneService.updateEntitiesOnTile(scene, tileData);
+        }
+      } else {
+        // Render new tile that came into perception
+        SceneService.renderTile(scene, tileData);
+        
+        // Render entities on this new tile
+        if (tileData.entities && tileData.entities.length > 0) {
+          tileData.entities.forEach((entity) => SceneService.renderEntity(scene, entity, tileData));
+        }
+      }
+    });
+
+    console.log("SceneService: Perception area update completed");
+  }
+
+  /**
+   * Update entities on a specific tile
+   * @param {Phaser.Scene} scene
+   * @param {object} tileData - Tile data containing entities
+   */
+  static updateEntitiesOnTile(scene, tileData) {
+    // Remove entities that are no longer on this tile
+    const currentEntitiesOnTile = Array.from(scene.entities.values())
+      .filter(entityInfo => entityInfo.tileId === tileData.id);
+    
+    const newEntityIds = new Set(tileData.entities.map(entity => entity.id));
+    
+    currentEntitiesOnTile.forEach((entityInfo) => {
+      if (!newEntityIds.has(entityInfo.data.id)) {
+        // Entity is no longer on this tile, remove it
+        if (entityInfo.sprite) {
+          entityInfo.sprite.destroy();
+        }
+        scene.entities.delete(entityInfo.data.id);
+      }
+    });
+
+    // Add or update entities on this tile
+    tileData.entities.forEach((entityData) => {
+      if (scene.entities.has(entityData.id)) {
+        // Update existing entity
+        const entityInfo = scene.entities.get(entityData.id);
+        entityInfo.data = { ...entityInfo.data, ...entityData };
+        entityInfo.tileId = tileData.id;
+        
+        // Update sprite position if entity exists
+        if (entityInfo.sprite) {
+          const x = tileData.x_coord * scene.tileSize + scene.tileSize / 2;
+          const y = tileData.y_coord * scene.tileSize + scene.tileSize / 2;
+          entityInfo.sprite.setPosition(x, y);
+          entityInfo.sprite.setVisible(true);
+          
+          // Update player reference if this is the player
+          if (entityData.name === "Player") {
+            scene.player = entityInfo.sprite;
+            scene.playerEntity = entityData;
+            scene.playerTileId = tileData.id;
+          }
+        }
+      } else {
+        // Render new entity
+        SceneService.renderEntity(scene, entityData, tileData);
+      }
+    });
   }
 }
 

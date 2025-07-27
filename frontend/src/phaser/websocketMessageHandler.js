@@ -32,6 +32,10 @@ export function handleIncomingMessage(game, message) {
       handlePlayerUpdate(game, data);
       break;
 
+    case "perception_update":
+      handlePerceptionUpdate(game, data);
+      break;
+
     case "player_disconnected":
       handlePlayerDisconnected(game, data);
       break;
@@ -123,6 +127,18 @@ function handlePlayerDisconnected(game, data) {
       scene.handlePlayerDisconnected(data);
     }
   });
+}
+
+/**
+ * Handle perception updates from server.
+ * @param {Phaser.Game} game - Phaser game instance.
+ * @param {object} data - Perception update data.
+ */
+function handlePerceptionUpdate(game, data) {
+  const scene = game.scene.getScene("OVERWORLD_SCENE");
+  if (scene && scene.handlePerceptionUpdate) {
+    scene.handlePerceptionUpdate(data);
+  }
 }
 
 /**
