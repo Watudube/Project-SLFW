@@ -1,5 +1,4 @@
 import asyncio
-
 from app.models.core.tile import Tile
 from app.schemas.core.tile_schema import PerceptionOut
 from app.services.core.level_service import LevelService
@@ -22,9 +21,12 @@ class PlayerLoopService:
 
     async def start(self, username: str):
         self.username = username
-        self.player_service.create_player_if_not_exists({"username": self.username})
+        if self.player_service.check_player_exists(self.username):
+            self.move_player_online()
+        else:
+            self.player_service.create_player({"username": self.username})
         while True:
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.1)
             await self.send_player_perception()
 
     async def send_player_perception(self):
@@ -96,7 +98,7 @@ class PlayerLoopService:
                     self.ws,
                 )
 
-    async def move_player_offline(self) -> None:
+    def move_player_offline(self) -> None:
         """
         When a player disconnects, move them to a designated tile
         Currently assuming the designated tile is on ground level (z_index=0)
@@ -112,4 +114,10 @@ class PlayerLoopService:
             raise ValueError("Failed to find target tile for offline player")
         player.tile_id = target_tile.id
         player.relog_tile_id = current_tile.id
+        self.player_service.commit_and_refresh(player)
+
+    def move_player_online(self) -> None:
+        player = self.player_service.get_player(self.username)
+        player.tile_id = player.relog_tile_id
+        player.relog_tile_id = None
         self.player_service.commit_and_refresh(player)

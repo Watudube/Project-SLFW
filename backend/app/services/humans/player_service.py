@@ -26,10 +26,7 @@ class PlayerService(HumanService[M, R], Generic[M, R]):
                 return tile.id
         # Implement fibonacci sequence
 
-    def create_player_if_not_exists(self, player_in: dict) -> Player:
-        player = self.check_player_exists(player_in["username"])
-        if player:
-            return player
+    def create_player(self, player_in: dict) -> Player:
         player_in["tile_id"] = self.find_safe_spawn_tile()
         player_in["type"] = "player"
         player_in["label"] = player_in["username"]

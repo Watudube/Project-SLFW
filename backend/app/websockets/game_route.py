@@ -96,8 +96,8 @@ async def game_ws(ws: WebSocket, db: Session = Depends(get_session)):
     finally:
         if player_loop:
             player_loop.cancel()
-        try:
-            await player_loop
-        except Exception as e:
-            pass
-        await player_loop_service.move_player_offline()
+            try:
+                await player_loop
+            except asyncio.CancelledError:
+                pass
+            player_loop_service.move_player_offline()
