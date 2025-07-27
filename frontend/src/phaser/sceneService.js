@@ -56,11 +56,61 @@ class SceneService {
     scene.playerEntity = null;
     scene.playerTileId = null;
 
-    console.log("SceneService: World cleared successfully!");
+    console.log("SceneService: World cleared successfully.");
   }
 
   /**
-   * Adds a tile to the tile render layer.
+   * Render all tiles and entities for the current gameboard.
+   * @param {Phaser.Scene} scene
+   */
+  static renderGameboard(scene) {
+    if (!scene.gameboardData || !scene.gameboardData.levels) {
+      console.warn("No gameboard data to render!");
+      console.log("Current gameboard data:");
+      console.log(scene.gameboardData);
+      return;
+    }
+
+    // Ensure layers exist before rendering anything
+    if (!scene.tileLayer) {
+      console.warn("SceneService: tileLayer not found during gameboard render, creating...");
+      if (!scene.add) {
+        console.error("SceneService: Scene.add is not available! Scene may not be fully initialized.");
+        return;
+      }
+      scene.tileLayer = scene.add.group();
+    }
+    if (!scene.entityLayer) {
+      console.warn("SceneService: entityLayer not found during gameboard render, creating...");
+      if (!scene.add) {
+        console.error("SceneService: Scene.add is not available! Scene may not be fully initialized.");
+        return;
+      }
+      scene.entityLayer = scene.add.group();
+    }
+
+    // TODO: Add logic to set level based on player's current position.
+    // For now, we are setting the first level as the active level.
+    const level = scene.gameboardData.levels[0];
+    if (!level || !level.tiles) {
+      console.warn("No level or tiles data found!");
+      return;
+    }
+
+    level.tiles.forEach((tile) => SceneService.renderTile(scene, tile));
+
+    // Render all entities but keep them hidden - they will be shown via perception updates
+    level.tiles.forEach((tile) => {
+      if (tile.entities && tile.entities.length > 0) {
+        tile.entities.forEach((entity) => SceneService.renderEntity(scene, entity, tile));
+      }
+    });
+
+    console.log(`Rendering level with ${level.id}...`);
+  }
+
+  /**
+   * Render a single tile.
    * @param {Phaser.Scene} scene
    * @param {object} tileData
    */
@@ -78,6 +128,8 @@ class SceneService {
     const x = tileData.x_coord * scene.tileSize;
     const y = tileData.y_coord * scene.tileSize;
     let spriteKey = tileData.sprite;
+
+    console.log(`Rendering tile at (${tileData.x_coord}, ${tileData.y_coord}) with sprite '${spriteKey}'.`);
 
     // Validate sprite exists before using.
     if (!scene.textures.exists(spriteKey)) {
@@ -308,6 +360,7 @@ class SceneService {
     if (levelChanges.new_level) {
       scene.gameboardData = levelChanges.new_level;
       SceneService.clearWorld(scene);
+      SceneService.renderGameboard(scene);
       SceneService.setupCamera(scene);
     }
   }
@@ -321,7 +374,7 @@ class SceneService {
     console.log("SceneService: Updating perception area with", perceptionTiles.length, "tiles");
 
     // Create a set of currently visible tile IDs for efficient lookup
-    const visibleTileIds = new Set(perceptionTiles.map((tile) => tile.id));
+    const visibleTileIds = new Set(perceptionTiles.map(tile => tile.id));
 
     // Hide/show tiles based on perception
     scene.tiles.forEach((tileInfo, tileId) => {
@@ -345,7 +398,7 @@ class SceneService {
         // Update existing tile data
         const tileInfo = scene.tiles.get(tileData.id);
         tileInfo.data = { ...tileInfo.data, ...tileData };
-
+        
         // Update entities on this tile
         if (tileData.entities && tileData.entities.length > 0) {
           SceneService.updateEntitiesOnTile(scene, tileData);
@@ -353,7 +406,7 @@ class SceneService {
       } else {
         // Render new tile that came into perception
         SceneService.renderTile(scene, tileData);
-
+        
         // Render entities on this new tile
         if (tileData.entities && tileData.entities.length > 0) {
           tileData.entities.forEach((entity) => SceneService.renderEntity(scene, entity, tileData));
@@ -371,12 +424,11 @@ class SceneService {
    */
   static updateEntitiesOnTile(scene, tileData) {
     // Remove entities that are no longer on this tile
-    const currentEntitiesOnTile = Array.from(scene.entities.values()).filter(
-      (entityInfo) => entityInfo.tileId === tileData.id
-    );
-
-    const newEntityIds = new Set(tileData.entities.map((entity) => entity.id));
-
+    const currentEntitiesOnTile = Array.from(scene.entities.values())
+      .filter(entityInfo => entityInfo.tileId === tileData.id);
+    
+    const newEntityIds = new Set(tileData.entities.map(entity => entity.id));
+    
     currentEntitiesOnTile.forEach((entityInfo) => {
       if (!newEntityIds.has(entityInfo.data.id)) {
         // Entity is no longer on this tile, remove it
@@ -394,14 +446,14 @@ class SceneService {
         const entityInfo = scene.entities.get(entityData.id);
         entityInfo.data = { ...entityInfo.data, ...entityData };
         entityInfo.tileId = tileData.id;
-
+        
         // Update sprite position if entity exists
         if (entityInfo.sprite) {
           const x = tileData.x_coord * scene.tileSize + scene.tileSize / 2;
           const y = tileData.y_coord * scene.tileSize + scene.tileSize / 2;
           entityInfo.sprite.setPosition(x, y);
           entityInfo.sprite.setVisible(true);
-
+          
           // Update player reference if this is the player
           if (entityData.name === "Player") {
             scene.player = entityInfo.sprite;
