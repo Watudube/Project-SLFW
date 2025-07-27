@@ -5,31 +5,34 @@ import { WEBSOCKET_BASEURL } from "../services/endpointURLs.js";
 import { handleIncomingMessage } from "./websocketMessageHandler.js";
 
 /**
- * WebSocket Manager for Phaser Game.
+ * WebSocket Manager for Phaser Game
  *
  * Handles all WebSocket communication from within the Phaser game context.
  */
 class WebSocketManager {
-  constructor(game, userToken = null) {
+  constructor(game) {
     this.game = game;
     this.socket = null;
     this.isConnected = false;
-    this.userToken = userToken;
+    this.userToken = null;
   }
 
   /**
    * Connect to WebSocket server.
-   * @param {string} url - WebSocket server URL (default: WEBSOCKET_BASEURL).
+   * @param {string} userToken - User authentication token.
+   * @param {string} url - WebSocket server URL (optional).
    */
-  connect(url = WEBSOCKET_BASEURL) {
+  connect(userToken, url = WEBSOCKET_BASEURL) {
     if (this.isConnected || this.socket) {
-      console.warn("WebSocketManager: WebSocket already connected or connecting!");
+      console.warn("WebSocket already connected or connecting!");
       return;
     }
 
+    this.userToken = userToken;
+    console.log("WebSocketManager: Connecting to server with token:", userToken ? `${userToken.substring(0, 10)}...` : "null");
+
     try {
-      console.log("WebSocketManager: Connecting to WebSocket server at", url);
-      this.socket = new WebSocket(url); // This creates a new WebSocket instance and connects it to the server.
+      this.socket = new WebSocket(url);
       this.setupEventHandlers();
     } catch (error) {
       console.error("WebSocketManager: Failed to create WebSocket connection:", error);
@@ -38,26 +41,21 @@ class WebSocketManager {
   }
 
   /**
-   * Setup WebSocket event handlers, handles connection open (including initial game join),
-   * message receive, close, and error events.
-   * @returns {void}
-   * */
+   * Set up WebSocket event handlers
+   */
   setupEventHandlers() {
     if (!this.socket) return;
 
     this.socket.onopen = () => {
-      console.log("WebSocketManager: Connection established!");
+      console.log("WebSocketManager: Connection established");
       this.isConnected = true;
 
-      // Join game session with current token.
+      // Join game session with current token
       const joinMessage = {
         type: "join_game",
         userToken: this.userToken,
       };
-      console.log(
-        "WebSocketManager: Sending join_game with token:",
-        this.userToken ? `${this.userToken.substring(0, 10)}...` : "null"
-      );
+      console.log("WebSocketManager: Sending join_game with token:", this.userToken ? `${this.userToken.substring(0, 10)}...` : "null");
       this.sendMessage(joinMessage);
     };
 
@@ -66,36 +64,39 @@ class WebSocketManager {
         const data = JSON.parse(event.data);
         console.log("WebSocketManager: Received message:", data);
 
-        // Route message to appropriate handler:
+        // Route message to appropriate handler
         handleIncomingMessage(this.game, data);
       } catch (error) {
         console.error("WebSocketManager: Failed to process message:", error);
         console.error("Message data:", event.data);
+
+        // Don't treat processing errors as connection errors
+        // Just log them and continue
       }
     };
 
     this.socket.onclose = (event) => {
-      console.log("WebSocketManager: Connection closed!", event.code, event.reason);
+      console.log("WebSocketManager: Connection closed", event.code, event.reason);
       this.isConnected = false;
 
-      // Don't handle disconnection if we already handled it in disconnect().
+      // Don't handle disconnection if we already handled it in disconnect()
       if (event.reason === "User initiated disconnect") {
         this.socket = null;
         return;
       }
 
-      // Check if this was due to invalid token (backend sends code 1008 for invalid token):
+      // Check if this was due to invalid token (backend sends code 1008 for invalid token)
       if (event.code === 1008 && event.reason === "Invalid token") {
-        console.log("WebSocketManager: Connection closed due to invalid token - triggering critical error.");
+        console.log("WebSocketManager: Connection closed due to invalid token - triggering critical error");
         // For authentication failures, trigger critical error callback directly
         if (this.game.reactCallbacks && this.game.reactCallbacks.onCriticalError) {
           this.game.reactCallbacks.onCriticalError("Authentication failed: Invalid token");
         }
       }
 
-      this.socket = null; // Clear socket reference to prevent further messages.
+      this.socket = null;
 
-      // Always handle disconnection. Design choice: We don't want to attempt to reconnect automatically and risk partial initialization of some states.
+      // Always handle disconnection - no reconnection attempts
       this.handleDisconnection(event);
     };
 
@@ -106,12 +107,12 @@ class WebSocketManager {
   }
 
   /**
-   * Send a message to the server.
-   * @param {object} message - Message to send.
+   * Send a message to the server
+   * @param {object} message - Message to send
    */
   sendMessage(message) {
     if (!this.isConnected || !this.socket) {
-      console.warn("WebSocketManager: Cannot send message - not connected!");
+      console.warn("WebSocketManager: Cannot send message - not connected");
       return false;
     }
 
@@ -125,9 +126,9 @@ class WebSocketManager {
   }
 
   /**
-   * Send player action to server.
-   * @param {string} action - Action type.
-   * @param {object} data - Action data.
+   * Send player action to server
+   * @param {string} action - Action type
+   * @param {object} data - Action data
    */
   sendPlayerAction(action, data) {
     return this.sendMessage({
@@ -139,7 +140,7 @@ class WebSocketManager {
   }
 
   /**
-   * Handle connection errors.
+   * Handle connection errors
    */
   handleConnectionError() {
     // Notify game scenes about connection issues
@@ -150,10 +151,10 @@ class WebSocketManager {
   }
 
   /**
-   * Handle disconnection (when reconnection fails or is not attempted).
+   * Handle disconnection (when reconnection fails or is not attempted)
    */
   handleDisconnection(event) {
-    console.log("WebSocketManager: Handling final disconnection:", event);
+    console.log("WebSocketManager: Handling final disconnection", event);
 
     // Notify all scenes about disconnection
     this.game.scene.scenes.forEach((scene) => {
@@ -166,11 +167,11 @@ class WebSocketManager {
     // For unexpected disconnections, ensure React callbacks are triggered
     // This provides a safety net in case scene callbacks don't work
     if (!event.wasUserInitiated) {
-      console.log("WebSocketManager: Unexpected disconnection detected - ensuring React callback is triggered:");
-
+      console.log("WebSocketManager: Unexpected disconnection detected - ensuring React callback is triggered");
+      
       // Try to trigger the onDisconnected callback as a fallback
       if (this.game.reactCallbacks && this.game.reactCallbacks.onDisconnected) {
-        console.log("WebSocketManager: Triggering React onDisconnected callback for unexpected disconnection:");
+        console.log("WebSocketManager: Triggering React onDisconnected callback for unexpected disconnection");
         this.game.reactCallbacks.onDisconnected(event);
       } else {
         console.warn("WebSocketManager: No React onDisconnected callback available!");
@@ -185,8 +186,8 @@ class WebSocketManager {
    * Disconnect from server
    */
   disconnect() {
-    console.log("WebSocketManager: disconnect() called.");
-
+    console.log("WebSocketManager: disconnect() called");
+    
     if (this.socket) {
       console.log("WebSocketManager: Closing WebSocket connection...");
       this.isConnected = false;
@@ -200,12 +201,12 @@ class WebSocketManager {
       }
       this.socket = null;
     } else {
-      console.log("WebSocketManager: No socket to disconnect! No action taken.");
+      console.log("WebSocketManager: No socket to disconnect");
     }
 
     // Clear user token as part of cleanup
     this.userToken = null;
-    console.log("WebSocketManager: disconnect() completed!");
+    console.log("WebSocketManager: disconnect() completed");
   }
 
   /**

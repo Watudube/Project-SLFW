@@ -24,6 +24,8 @@ export default function GamePage() {
   const { isLoading, logout } = useContext(UserContext);
   const navigate = useNavigate();
 
+  console.log("GamePage mounting...");
+
   /**
    * Handle user logout by clearing user data and navigating to home page.
    */
@@ -36,8 +38,6 @@ export default function GamePage() {
   if (isLoading) {
     return <div className="loading-container">Loading user data...</div>;
   }
-
-  console.log("Redering GamePage with PhaserComponent...");
 
   // The main game page content.
   return (

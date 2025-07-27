@@ -66,7 +66,7 @@ class OverworldScene extends Phaser.Scene {
    * This method is called once when the scene is created.
    */
   init() {
-    console.log("overworldScene: init() called - Initializing scene...");
+    console.log("[OverworldScene] init() called - Initializing scene...");
 
     // Initialize scene state variables (don't call resetSceneState here as layers don't exist yet).
     this.player = null;
@@ -80,13 +80,19 @@ class OverworldScene extends Phaser.Scene {
     this.entities = new Map();
     this.tileGrid = new Map();
 
+    console.log("[OverworldScene] Scene state initialized");
+
     // Initialize keyboard controls with error checking.
     try {
-      console.log("overworldScene: Creating keyboard controls...");
+      console.log("[OverworldScene] Creating keyboard controls...");
       this.cursors = this.input.keyboard.createCursorKeys();
       this.wasdKeys = this.input.keyboard.addKeys("W,S,A,D");
+      console.log("[OverworldScene] Keyboard inputs initialized successfully:", {
+        cursors: this.cursors,
+        wasdKeys: this.wasdKeys,
+      });
     } catch (error) {
-      console.error("overworldScene: Failed to initialize keyboard inputs:", error);
+      console.error("[OverworldScene] Failed to initialize keyboard inputs:", error);
       // Set them to null so create() can try again.
       this.cursors = null;
       this.wasdKeys = null;
@@ -94,9 +100,9 @@ class OverworldScene extends Phaser.Scene {
 
     // Add WebSocket event handlers to this scene.
     addWebSocketHandlers(this);
-    console.log("overworldScene: WebSocket event handlers added to scene.");
+    console.log("[OverworldScene] WebSocket event handlers added");
 
-    console.log("overworldScene: init() completed!");
+    console.log("[OverworldScene] init() completed successfully");
   }
 
   /**
@@ -104,14 +110,12 @@ class OverworldScene extends Phaser.Scene {
    * This method is called before create.
    */
   preload() {
-    console.log(`overworldScene: ${SCENE_KEYS.OVERWORLD_SCENE} assets preloading...`);
+    console.log(`${SCENE_KEYS.OVERWORLD_SCENE} assets preloading...`);
 
     // Load all sprites from the sprite directory:
     Object.entries(sprites).forEach(([key, path]) => {
       this.load.image(key, path);
     });
-
-    console.log(`overworldScene: Assets preloaded!`);
   }
 
   /**
@@ -119,30 +123,53 @@ class OverworldScene extends Phaser.Scene {
    * This method is called after preload.
    */
   create() {
-    console.log(`overworldScene: create() called - Creating scene...`);
+    console.log(`[${SCENE_KEYS.OVERWORLD_SCENE}] create() called - Creating scene...`);
+
+    // Ensure keyboard inputs are properly set up (fallback if init failed)
+    try {
+      if (!this.cursors) {
+        console.warn("[OverworldScene] Cursors not found, recreating...");
+        this.cursors = this.input.keyboard.createCursorKeys();
+      }
+      if (!this.wasdKeys) {
+        console.warn("[OverworldScene] WASD keys not found, recreating...");
+        this.wasdKeys = this.input.keyboard.addKeys("W,S,A,D");
+      }
+      console.log("[OverworldScene] Keyboard setup verified:", {
+        cursors: this.cursors,
+        wasdKeys: this.wasdKeys,
+      });
+    } catch (error) {
+      console.error("[OverworldScene] Failed to set up keyboard inputs in create:", error);
+    }
 
     // Create layers for organized rendering:
-    console.log("Creating grouped render layers...");
+    console.log("[OverworldScene] Creating display layers...");
     this.tileLayer = this.add.group();
     this.entityLayer = this.add.group();
+    console.log("[OverworldScene] Display layers created:", {
+      tileLayer: this.tileLayer,
+      entityLayer: this.entityLayer,
+    });
 
     // Set up camera:
     this.cameras.main.setBackgroundColor(0x2c3e50);
-    console.log("overworldScene: Viewport camera background colour set.");
+    console.log("[OverworldScene] Camera background set");
 
     // Get React callbacks from game instance
     if (this.game.reactCallbacks) {
       this.setReactCallbacks(this.game.reactCallbacks.onDisconnected, this.game.reactCallbacks.onCriticalError);
-      console.log("overworldScene: React callbacks set up.");
+      console.log("[OverworldScene] React callbacks set up");
     } else {
-      console.warn("overworldScene: No React callbacks found on game instance!");
+      console.warn("[OverworldScene] No React callbacks found on game instance");
     }
 
-    console.log(`overworldScene: create() completed - Scene ready for game join!`);
+    console.log(`[${SCENE_KEYS.OVERWORLD_SCENE}] create() completed - Scene ready for game join`);
+    console.log(`[OverworldScene] Keyboard inputs status - Cursors: ${!!this.cursors}, WASD: ${!!this.wasdKeys}`);
 
     // Process any pending gameboard data that arrived before scene was ready
     if (this.pendingGameboardData) {
-      console.log("overworldScene: Processing pending gameboard data...");
+      console.log("[OverworldScene] Processing pending gameboard data...");
       this.handleGameJoined(this.pendingGameboardData);
       this.pendingGameboardData = null;
     }
@@ -153,8 +180,8 @@ class OverworldScene extends Phaser.Scene {
    * This main update loop that runs every frame.
    */
   update() {
-    // Test keyboard inputs even when game isn't ready (for debugging). TODO: Remove in production.
-    // this.testKeyboardInputs();
+    // Test keyboard inputs even when game isn't ready (for debugging)
+    this.testKeyboardInputs();
 
     this.handleInput();
 
@@ -166,17 +193,18 @@ class OverworldScene extends Phaser.Scene {
    */
   testKeyboardInputs() {
     try {
-      // Test if this.input exists and has keyboard property:
+      // Test if this.input exists and has keyboard property
       if (!this.input) {
-        console.log("overworldScene: this.input is null/undefined!");
-        return;
-      }
-      if (!this.input.keyboard) {
-        console.log("overworldScene: this.input.keyboard is null/undefined!");
+        console.log("[OverworldScene] this.input is null/undefined");
         return;
       }
 
-      // Test if cursors exist.
+      if (!this.input.keyboard) {
+        console.log("[OverworldScene] this.input.keyboard is null/undefined");
+        return;
+      }
+
+      // Test if cursors exist
       if (this.cursors) {
         if (this.cursors.left.isDown) {
           console.log("[OverworldScene] Left arrow key detected!");
@@ -227,8 +255,8 @@ class OverworldScene extends Phaser.Scene {
 
   /**
    * Set callbacks for communicating with React layer
-   * @param {Function} onDisconnected - Callback for disconnection.
-   * @param {Function} onCriticalError - Callback for critical errors.
+   * @param {Function} onDisconnected - Callback for disconnection
+   * @param {Function} onCriticalError - Callback for critical errors
    */
   setReactCallbacks(onDisconnected, onCriticalError) {
     this.onDisconnected = onDisconnected;
@@ -240,7 +268,7 @@ class OverworldScene extends Phaser.Scene {
    * This should only be called when the scene needs to be completely cleared
    */
   resetSceneState() {
-    console.log("overworldScene: resetSceneState() called - Clearing scene state...");
+    console.log("[OverworldScene] resetSceneState() called - Clearing scene state...");
 
     // Clear all game objects and data
     this.player = null;
@@ -250,25 +278,25 @@ class OverworldScene extends Phaser.Scene {
 
     // Clear all collections safely
     if (this.tiles) {
-      console.log("overworldScene: Clearing tiles collection...");
+      console.log("[OverworldScene] Clearing tiles collection...");
       this.tiles.clear();
     }
     if (this.entities) {
-      console.log("overworldScene: Clearing entities collection...");
+      console.log("[OverworldScene] Clearing entities collection...");
       this.entities.clear();
     }
     if (this.tileGrid) {
-      console.log("overworldScene: Clearing tileGrid collection...");
+      console.log("[OverworldScene] Clearing tileGrid collection...");
       this.tileGrid.clear();
     }
 
     // Only clear layers if they exist and are valid Phaser objects
     if (this.tileLayer && this.tileLayer.destroy) {
-      console.log("overworldScene: Destroying tile layer...");
+      console.log("[OverworldScene] Destroying tile layer...");
       this.tileLayer.destroy();
     }
     if (this.entityLayer && this.entityLayer.destroy) {
-      console.log("overworldScene: Destroying entity layer...");
+      console.log("[OverworldScene] Destroying entity layer...");
       this.entityLayer.destroy();
     }
 
@@ -283,26 +311,28 @@ class OverworldScene extends Phaser.Scene {
     this.onDisconnected = null;
     this.onCriticalError = null;
 
-    console.log("overworldScene: resetSceneState() completed!");
+    console.log("[OverworldScene] resetSceneState() completed");
   }
 
   /**
    * Handle player input and send actions to server.
    */
   handleInput() {
-    // Check if keyboard inputs are available:
+    // Check if keyboard inputs are available
     if (!this.cursors || !this.wasdKeys) {
-      console.warn("overworldScene: Keyboard inputs not initialized! Cannot handle input.");
+      console.warn("OverworldScene: Keyboard inputs not initialized");
       return;
     }
-    // Check if WebSocket connection is active:
+
+    // If WebSocket manager is not connected, do nothing.
     if (!this.game.webSocketManager || !this.game.webSocketManager.isConnectionActive()) {
-      console.log("overworldScene: WebSocket not connected! Skipping input handling.");
+      // console.log("OverworldScene: WebSocket not connected, skipping input");
       return;
     }
+
     // Only process input if game is ready.
     if (!this.isGameReady) {
-      console.log("overworldScene: Game not ready! Skipping input handling.");
+      console.log("OverworldScene: Game not ready, skipping input. isGameReady:", this.isGameReady);
       return;
     }
 
@@ -333,7 +363,7 @@ class OverworldScene extends Phaser.Scene {
     }
 
     if (action) {
-      console.log("overworldScene: Sending user input to websocketManager:", action, data);
+      console.log("OverworldScene: Sending player action:", action, data);
       this.game.webSocketManager.sendPlayerAction(action, data);
       this.lastInputTime = currentTime;
     }

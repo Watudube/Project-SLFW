@@ -13,7 +13,7 @@
 export function handleIncomingMessage(game, message) {
   const { type, data, status, error } = message;
 
-  console.log(`WebSocketMessageHandler: Processing message type: ${type}.`);
+  console.log(`WebSocketMessageHandler: Processing message type: ${type}`);
 
   switch (type) {
     case "join_game_response":
@@ -45,7 +45,7 @@ export function handleIncomingMessage(game, message) {
       break;
 
     default:
-      console.warn(`WebSocketMessageHandler: Unknown message type: ${type}.`);
+      console.warn(`WebSocketMessageHandler: Unknown message type: ${type}`);
   }
 }
 
@@ -61,9 +61,9 @@ function handleGameJoinResponse(game, response) {
   console.log("WebSocketMessageHandler: Found scene:", !!scene);
 
   if (response.status === "success") {
-    console.log("WebSocketMessageHandler: Game join successful!");
+    console.log("WebSocketMessageHandler: Game join successful");
     if (scene && scene.handleGameJoined) {
-      console.log("WebSocketMessageHandler: Calling scene.handleGameJoined.");
+      console.log("WebSocketMessageHandler: Calling scene.handleGameJoined");
       scene.handleGameJoined(response.data);
     } else {
       console.warn("WebSocketMessageHandler: No scene found to handle game joined. Scene:", scene);

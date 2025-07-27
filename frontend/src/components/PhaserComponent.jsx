@@ -30,13 +30,13 @@ export default function PhaserComponent() {
 
     // Always destroy existing game instance before creating a new one
     if (gameRef.current) {
-      console.log("PhaserComponent: Destroying existing Phaser game instance for re-login...");
+      console.log("Destroying existing Phaser game instance for re-login...");
       gameRef.current.destroy(true);
       gameRef.current = null;
     }
 
     // Create Phaser game instance
-    console.log("PhaserComponent: Creating new Phaser Game instance...");
+    console.log("Creating new Phaser game instance...");
 
     // Get container dimensions:
     const width = containerRef.current.offsetWidth;
@@ -61,8 +61,8 @@ export default function PhaserComponent() {
         antialias: false,
       },
       scale: {
-        mode: Phaser.Scale.NONE,
-        autoCenter: Phaser.Scale.NO_CENTER,
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
       },
     };
 
@@ -82,7 +82,7 @@ export default function PhaserComponent() {
 
         // Force logout
         forceLogout("websocket_disconnect");
-
+        
         // Navigate after cleanup
         navigate("/");
       },
@@ -97,7 +97,7 @@ export default function PhaserComponent() {
 
         // Force logout
         forceLogout("critical_error");
-
+        
         // Navigate after cleanup
         navigate("/");
       },
@@ -106,14 +106,14 @@ export default function PhaserComponent() {
     console.log("PhaserComponent: React callbacks set on game instance:", !!gameRef.current.reactCallbacks);
 
     // Add WebSocket manager to the game:
-    gameRef.current.webSocketManager = new WebSocketManager(gameRef.current, userToken);
+    gameRef.current.webSocketManager = new WebSocketManager(gameRef.current);
 
     // Connect to WebSocket
-    gameRef.current.webSocketManager.connect();
+    gameRef.current.webSocketManager.connect(userToken);
 
     // Cleanup function to disconnect WebSocket instance on unmount.
     return () => {
-      console.log("PhaserComponent: Cleaning up PhaserComponent...");
+      console.log("Cleaning up PhaserComponent...");
 
       if (gameRef.current?.webSocketManager) {
         gameRef.current.webSocketManager.disconnect();
@@ -121,7 +121,7 @@ export default function PhaserComponent() {
 
       // Destroy game instance when userToken changes (logout/login)
       if (gameRef.current) {
-        console.log("PhaserComponent: Destroying Phaser game instance due to token change...");
+        console.log("Destroying Phaser game instance due to token change...");
         gameRef.current.destroy(true);
         gameRef.current = null;
       }
@@ -150,12 +150,25 @@ export default function PhaserComponent() {
   useEffect(() => {
     return () => {
       if (gameRef.current) {
-        console.log("PhaserComponent: Unmounting, destroying Phaser game instance...");
+        console.log("Final cleanup: Destroying Phaser game instance...");
         gameRef.current.destroy(true);
         gameRef.current = null;
       }
     };
   }, []);
 
-  return <div ref={containerRef} className="phaser-component-container"></div>;
+  return (
+    <div
+      ref={containerRef}
+      className="phaser-component-container"
+      style={{
+        width: "100%",
+        height: "100%",
+        minHeight: "400px",
+        border: "2px solid #444",
+        borderRadius: "8px",
+        overflow: "hidden",
+      }}
+    ></div>
+  );
 }

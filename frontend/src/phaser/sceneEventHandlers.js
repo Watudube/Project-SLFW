@@ -17,7 +17,7 @@ export function addWebSocketHandlers(scene) {
    * @param {object} data - Initial game data from server.
    */
   scene.handleGameJoined = function (data) {
-    console.log("SceneEventHandlers: Handling game joined, data:", data);
+    console.log("SceneEventHandlers: [Start] Handling game joined, data:", data);
 
     // Check if scene is fully created (has layers).
     if (!this.tileLayer || !this.entityLayer) {
@@ -30,15 +30,18 @@ export function addWebSocketHandlers(scene) {
     }
 
     if (data.initial_gameboard) {
-      console.log("SceneEventHandlers: Found initial_gameboard, calling handleInitialGameboardData.");
+      console.log("✅ Found initial_gameboard, calling handleInitialGameboardData");
       this.handleInitialGameboardData(data.initial_gameboard);
       // Set scene as ready to receive updates.
       this.isGameReady = true;
+      console.log("✅ Scene is now ready for input (isGameReady = true)");
     } else {
       console.error("❌ No initial_gameboard in data. Full data object:", data);
       this.isGameReady = false;
       console.log("❌ Scene NOT ready for input (isGameReady = false)");
     }
+
+    console.log("SceneEventHandlers: [End] Handling game joined.");
   };
 
   /**
@@ -57,15 +60,16 @@ export function addWebSocketHandlers(scene) {
    * @param {object} gameboardData - Complete gameboard data.
    */
   scene.handleInitialGameboardData = function (gameboardData) {
-    console.log("SceneEventHandlers: Processing initial gameboard, data:", gameboardData);
+    console.log("SceneEventHandlers: [Start] Processing initial gameboard, data:", gameboardData);
 
     this.gameboardData = gameboardData;
 
     // Clear and render the new gameboard.
     SceneService.clearWorld(this);
+    SceneService.renderGameboard(this);
     SceneService.setupCamera(this);
 
-    console.log("SceneEventHandlers: Initial gameboard data processed!");
+    console.log("SceneEventHandlers: [End] Processing initial gameboard data.");
   };
 
   /**
@@ -73,7 +77,7 @@ export function addWebSocketHandlers(scene) {
    * @param {object} data - World update data.
    */
   scene.handleWorldUpdate = function (data) {
-    console.log("SceneEventHandlers: Processing world update, data:", data);
+    console.log("SceneEventHandlers: [Start] Processing world update, data:", data);
 
     if (!this.isGameReady) {
       console.warn("Received world update before game is ready!");
@@ -93,7 +97,7 @@ export function addWebSocketHandlers(scene) {
       SceneService.handleLevelChanges(this, data.level_changes);
     }
 
-    console.log("SceneEventHandlers: World update data processed!");
+    console.log("SceneEventHandlers: [End] Processing world update data.");
   };
 
   /**
@@ -101,10 +105,10 @@ export function addWebSocketHandlers(scene) {
    * @param {object} data - Entity update data
    */
   scene.handleEntityUpdate = function (data) {
-    console.log("SceneEventHandlers: Processing entity update, data:", data);
+    console.log("SceneEventHandlers: [Start] Processing entity update, data:", data);
 
     if (!this.isGameReady) {
-      console.warn("SceneEventHandlers: Received entity update before game is ready!");
+      console.warn("SceneEventHandlers: Received entity update before game is ready");
       return;
     }
 
@@ -123,7 +127,7 @@ export function addWebSocketHandlers(scene) {
       SceneService.removeEntities(this, data.removed_entities);
     }
 
-    console.log("SceneEventHandlers: Entity update processed!");
+    console.log("SceneEventHandlers: [End] Processing entity update.");
   };
 
   /**
@@ -131,10 +135,10 @@ export function addWebSocketHandlers(scene) {
    * @param {object} data - Player update data.
    */
   scene.handlePlayerUpdate = function (data) {
-    console.log("SceneEventHandlers: Processing player update, data:", data);
+    console.log("SceneEventHandlers: [Start] Processing player update, data:", data);
 
     if (!this.isGameReady) {
-      console.warn("SceneEventHandlers: Received player update before game is ready!");
+      console.warn("SceneEventHandlers: Received player update before game is ready");
       return;
     }
 
@@ -153,7 +157,7 @@ export function addWebSocketHandlers(scene) {
       SceneService.updatePlayerInventory(this, data.inventory);
     }
 
-    console.log("SceneEventHandlers: Player update processed.");
+    console.log("SceneEventHandlers: [End] Processing player update.");
   };
 
   /**
@@ -161,10 +165,10 @@ export function addWebSocketHandlers(scene) {
    * @param {object} data - Perception update data containing tiles within player's perception radius.
    */
   scene.handlePerceptionUpdate = function (data) {
-    console.log("SceneEventHandlers: Processing perception update, data:", data);
+    console.log("SceneEventHandlers: [Start] Processing perception update, data:", data);
 
     if (!this.isGameReady) {
-      console.warn("SceneEventHandlers: Received perception update before game is ready!");
+      console.warn("SceneEventHandlers: Received perception update before game is ready");
       return;
     }
 
@@ -172,7 +176,7 @@ export function addWebSocketHandlers(scene) {
       SceneService.updatePerceptionArea(this, data.perception.tiles);
     }
 
-    console.log("SceneEventHandlers: Perception update processed!");
+    console.log("SceneEventHandlers: [End] Processing perception update.");
   };
 
   /**
@@ -180,7 +184,7 @@ export function addWebSocketHandlers(scene) {
    * @param {object} data - Disconnection data.
    */
   scene.handlePlayerDisconnected = function (data) {
-    console.log("SceneEventHandlers: Destroying player (disconnected) data:", data);
+    console.log("SceneEventHandlers: [Start] Player disconnected data:", data);
 
     // Remove disconnected player from the scene.
     if (data.player_id && this.entities.has(data.player_id)) {
@@ -191,7 +195,7 @@ export function addWebSocketHandlers(scene) {
       this.entities.delete(data.player_id);
     }
 
-    console.log("SceneEventHandlers: Player data destroyed!");
+    console.log("SceneEventHandlers: [End] Player disconnected.");
   };
 
   /**
@@ -220,7 +224,7 @@ export function addWebSocketHandlers(scene) {
    * @param {object} event - Disconnection event.
    */
   scene.handleDisconnection = function (event) {
-    console.log("SceneEventHandlers: Handling disconnection, event:", event);
+    console.log("SceneEventHandlers: [Start] Handling disconnection, event:", event);
 
     this.isGameReady = false;
 
@@ -240,7 +244,7 @@ export function addWebSocketHandlers(scene) {
       console.warn("SceneEventHandlers: No onDisconnected callback available!");
     }
 
-    console.log("SceneEventHandlers: Disconnection handled!");
+    console.log("SceneEventHandlers: [End] Handling disconnection.");
   };
 
   /**
