@@ -24,7 +24,7 @@ class PlayerLoopService:
         self.username = username
         self.player_service.create_player_if_not_exists({"username": self.username})
         while True:
-            await asyncio.sleep(5)
+            await asyncio.sleep(1)
             await self.send_player_perception()
 
     async def send_player_perception(self):

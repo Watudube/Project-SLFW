@@ -6,7 +6,7 @@
  */
 export const sprites = {
   // Actor sprites:
-  player: "/assets/actors/player_placeholder.png",
+  player: "/assets/actors/player.png",
   villager: "/assets/actors/villager_01.png",
   wolf: "/assets/actors/wolf_placeholder.png",
   deer: "/assets/actors/deer_placeholder.png",
