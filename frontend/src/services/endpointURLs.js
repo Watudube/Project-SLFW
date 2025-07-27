@@ -6,8 +6,8 @@
  */
 
 // Backend host configuration:
-// const domainURL = "192.168.1.142"; // For local network development.
-const domainURL = "localhost"; // For localhost development.
+const domainURL = "192.168.1.142"; // For local network development.
+// const domainURL = "localhost"; // For localhost development.
 
 // API endpoints:
 export const WEBSOCKET_BASEURL = `ws://${domainURL}:8000/ws/game`;
